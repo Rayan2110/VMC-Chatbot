@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 
-const API = "/api";
+// const API = "/api";
+const API = window.location.hostname === "localhost" 
+  ? "/api" 
+  : "https://vmc-chatbot-api.onrender.com";
 
 async function api(path, opts = {}) {
   const r = await fetch(`${API}${path}`, {
