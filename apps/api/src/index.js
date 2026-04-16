@@ -66,6 +66,86 @@ app.post("/interventions", async (req, res) => {
   res.status(201).json(intervention);
 });
 
+// Mettre à jour le motif d'une intervention (appelé quand l'utilisateur choisit le motif réel)
+app.patch("/interventions/:id", async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const { motif } = req.body;
+  if (!motif) return res.status(400).json({ error: "motif requis" });
+  const intervention = await prisma.intervention.update({
+    where: { id },
+    data: { motif: motif.toUpperCase() },
+  });
+  res.json(intervention);
+});
+
+// Liste paginée d'interventions avec filtres (pour admin)
+app.get("/interventions", async (req, res) => {
+  const { statut, intervenantId, motif, page = 1, pageSize = 20 } = req.query;
+  const where = {};
+  if (statut) where.statut = statut;
+  if (intervenantId) where.intervenantId = parseInt(intervenantId, 10);
+  if (motif) where.motif = motif;
+
+  const skip = (parseInt(page, 10) - 1) * parseInt(pageSize, 10);
+  const take = parseInt(pageSize, 10);
+
+  const [items, total] = await Promise.all([
+    prisma.intervention.findMany({
+      where,
+      orderBy: { dateCreation: "desc" },
+      skip,
+      take,
+      include: {
+        intervenant: true,
+        client: true,
+        _count: { select: { reponses: true, captures: true, pieces: true } },
+      },
+    }),
+    prisma.intervention.count({ where }),
+  ]);
+
+  res.json({ items, total, page: parseInt(page, 10), pageSize: take });
+});
+
+// Statistiques agrégées (pour admin dashboard)
+app.get("/interventions-stats", async (req, res) => {
+  const [total, termine, escalade, enCours, parIntervenant, parMotif] = await Promise.all([
+    prisma.intervention.count(),
+    prisma.intervention.count({ where: { statut: "TERMINEE" } }),
+    prisma.intervention.count({ where: { statut: "ESCALADEE" } }),
+    prisma.intervention.count({ where: { statut: "EN_COURS" } }),
+    prisma.intervention.groupBy({
+      by: ["intervenantId"],
+      _count: true,
+    }),
+    prisma.intervention.groupBy({
+      by: ["motif"],
+      _count: true,
+    }),
+  ]);
+
+  // Enrichir avec les noms
+  const intervenants = await prisma.intervenant.findMany();
+  const parIntervenantEnrichi = parIntervenant.map((p) => {
+    const i = intervenants.find((x) => x.id === p.intervenantId);
+    return {
+      intervenantId: p.intervenantId,
+      nom: i ? `${i.prenom} ${i.nom}` : `#${p.intervenantId}`,
+      count: p._count,
+    };
+  });
+
+  res.json({
+    total,
+    termine,
+    escalade,
+    enCours,
+    tauxEscalade: total > 0 ? Math.round((escalade / total) * 100) : 0,
+    parIntervenant: parIntervenantEnrichi,
+    parMotif: parMotif.map((m) => ({ motif: m.motif, count: m._count })),
+  });
+});
+
 // Récupérer une intervention complète (réponses + captures + pièces)
 app.get("/interventions/:id", async (req, res) => {
   const id = parseInt(req.params.id, 10);

@@ -1,15 +1,22 @@
-// Seed complet — alimente la base avec :
-//   - 3 intervenants et 3 clients de démo
-//   - L'arbre de décision : entrée + 4 branches (Entretien, Dépannage, Remplacement, Installation)
-//   - Les 5 sous-arbres complets de Dépannage :
-//       * Ne fonctionne plus
-//       * Bruit anormal
-//       * Débit insuffisant
-//       * Humidité persistante
-//       * Code erreur (double flux)
-//   - Les autres branches (Entretien, Remplacement, Installation) en stubs → clôture directe
+// Seed complet — arbre de décision VMC avec les 4 branches opérationnelles :
+//   - ENTRETIEN préventif (7 étapes)
+//   - DEPANNAGE (5 sous-arbres : Ne fonctionne plus, Bruit, Débit, Humidité, Code erreur)
+//   - REMPLACEMENT (9 étapes)
+//   - INSTALLATION neuve (10 étapes)
 
 const { prisma } = require("./index");
+
+// Liste générique de marques (Remplacement ancien + nouveau + Installation)
+const MARQUES = [
+  { valeur: "aldes", libelle: "Aldes" },
+  { valeur: "atlantic", libelle: "Atlantic" },
+  { valeur: "unelvent", libelle: "Unelvent" },
+  { valeur: "autogyre", libelle: "Autogyre" },
+  { valeur: "brink", libelle: "Brink" },
+  { valeur: "helios", libelle: "Helios" },
+  { valeur: "zehnder", libelle: "Zehnder" },
+  { valeur: "autre", libelle: "Autre (préciser en commentaire)" },
+];
 
 async function main() {
   console.log("🧹 Nettoyage des tables...");
@@ -59,16 +66,16 @@ async function main() {
     return Q[code];
   }
 
-  // ═══ Niveau 0 : entrée ═══════════════════════════════════════════
+  // ═══ NIVEAU 0 : ENTRÉE — choix du motif ══════════════════════════
   await makeQuestion("VMC_ENTREE_MOTIF", "Quel est le motif de l'intervention ?", "CHOIX_UNIQUE", { ordre: 1 });
 
-  // ═══ Niveau 1 : aiguillage par motif ═════════════════════════════
+  // ═══ AIGUILLAGE PAR MOTIF ═════════════════════════════════════════
   await makeQuestion("VMC_DEP_SYMPT", "Quel symptôme est signalé ?", "CHOIX_UNIQUE", { ordre: 2 });
-  await makeQuestion("VMC_ENT_TYPE", "Quel type de VMC ?", "CHOIX_UNIQUE", { ordre: 3 });
-  await makeQuestion("VMC_REM_CONFIRM", "Confirmer le remplacement pour vétusté ?", "CHOIX_UNIQUE", { ordre: 4 });
-  await makeQuestion("VMC_INS_DEBUT", "Démarrer la mise en service ?", "CHOIX_UNIQUE", { ordre: 5 });
+  await makeQuestion("VMC_ENT_TYPE", "Quel type de VMC à entretenir ?", "CHOIX_UNIQUE", { ordre: 3 });
+  await makeQuestion("VMC_REM_MARQUE_ANCIENNE", "Quelle est la marque de la VMC à déposer ?", "CHOIX_UNIQUE", { ordre: 4 });
+  await makeQuestion("VMC_INS_TYPE", "Type de VMC à installer ?", "CHOIX_UNIQUE", { ordre: 5 });
 
-  // ═══ Clôture commune ═════════════════════════════════════════════
+  // ═══ CLÔTURE COMMUNE : signature ══════════════════════════════════
   await makeQuestion(
     "VMC_CLOTURE_SIGNATURE",
     "Signature du client pour validation",
@@ -76,7 +83,9 @@ async function main() {
     { ordre: 100, captureObligatoire: "SIGNATURE", aideTexte: "Faire signer sur la tablette" }
   );
 
-  // ═══ SOUS-ARBRE 1 : Ne fonctionne plus ═══════════════════════════
+  // ═══════════════════════════════════════════════════════════════════
+  // SOUS-ARBRE 1 : DÉPANNAGE — Ne fonctionne plus
+  // ═══════════════════════════════════════════════════════════════════
   await makeQuestion("VMC_DEP_NF_ALIM", "L'alimentation électrique est-elle présente ?", "CHOIX_UNIQUE",
     { ordre: 30, captureObligatoire: "PHOTO", aideTexte: "Photo du tableau électrique avant intervention" });
   await makeQuestion("VMC_DEP_NF_DISJ", "Le disjoncteur dédié est-il enclenché (non déclenché) ?", "CHOIX_UNIQUE",
@@ -90,7 +99,9 @@ async function main() {
     { ordre: 34, captureObligatoire: "MESURE", uniteAttendue: "m³/h",
       aideTexte: "Anémomètre à la bouche de SDB. Conforme si ≥ 30 m³/h" });
 
-  // ═══ SOUS-ARBRE 2 : Bruit anormal ════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════
+  // SOUS-ARBRE 2 : DÉPANNAGE — Bruit anormal
+  // ═══════════════════════════════════════════════════════════════════
   await makeQuestion("VMC_DEP_BRUIT_TYPE", "Quel type de bruit entendez-vous ?", "CHOIX_UNIQUE",
     { ordre: 40, aideTexte: "Écouter à proximité du caisson et des bouches" });
   await makeQuestion("VMC_DEP_BRUIT_CAISSON", "Le caisson VMC est-il correctement suspendu (silent-blocs OK) ?", "CHOIX_UNIQUE",
@@ -100,7 +111,9 @@ async function main() {
   await makeQuestion("VMC_DEP_BRUIT_MOTEUR", "État du moteur (roulements, axe) — tourne sans accroc ?", "CHOIX_UNIQUE",
     { ordre: 43, captureObligatoire: "PHOTO", aideTexte: "Démonter et inspecter le moteur" });
 
-  // ═══ SOUS-ARBRE 3 : Débit insuffisant ════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════
+  // SOUS-ARBRE 3 : DÉPANNAGE — Débit insuffisant
+  // ═══════════════════════════════════════════════════════════════════
   await makeQuestion("VMC_DEP_DEBIT_MESURE_INIT", "Mesure débit à la bouche principale (avant intervention)", "NUMERIQUE",
     { ordre: 50, captureObligatoire: "MESURE", uniteAttendue: "m³/h",
       aideTexte: "Anémomètre. Conforme si SDB ≥ 30, WC ≥ 15 m³/h" });
@@ -114,7 +127,9 @@ async function main() {
     { ordre: 54, captureObligatoire: "MESURE", uniteAttendue: "m³/h",
       aideTexte: "Remesure pour confirmer le rétablissement du débit" });
 
-  // ═══ SOUS-ARBRE 4 : Humidité persistante ═════════════════════════
+  // ═══════════════════════════════════════════════════════════════════
+  // SOUS-ARBRE 4 : DÉPANNAGE — Humidité persistante
+  // ═══════════════════════════════════════════════════════════════════
   await makeQuestion("VMC_DEP_HUM_FLUX", "Sens du flux correct (test fumée ou papier) ?", "CHOIX_UNIQUE",
     { ordre: 60, captureObligatoire: "PHOTO", aideTexte: "Approcher une fumée d'encens près de la bouche, elle doit être aspirée" });
   await makeQuestion("VMC_DEP_HUM_DEBIT", "Mesure débit aux bouches humides (SDB, cuisine)", "NUMERIQUE",
@@ -125,7 +140,9 @@ async function main() {
   await makeQuestion("VMC_DEP_HUM_EXTERNE", "Signes d'infiltration ou ponts thermiques dans le logement ?", "CHOIX_UNIQUE",
     { ordre: 63, captureObligatoire: "PHOTO", aideTexte: "Observer les zones humides, murs, plafonds" });
 
-  // ═══ SOUS-ARBRE 5 : Code erreur (double flux) ════════════════════
+  // ═══════════════════════════════════════════════════════════════════
+  // SOUS-ARBRE 5 : DÉPANNAGE — Code erreur (double flux)
+  // ═══════════════════════════════════════════════════════════════════
   await makeQuestion("VMC_DEP_CODE_SAISIE", "Saisir le code erreur affiché sur la centrale", "TEXTE_LIBRE",
     { ordre: 70, captureObligatoire: "PHOTO", aideTexte: "Photo de l'afficheur + saisie du code (ex: E03, ERR1...)" });
   await makeQuestion("VMC_DEP_CODE_ACTION", "Action corrective effectuée (réarmement, nettoyage, remplacement sonde...) ?", "CHOIX_UNIQUE",
@@ -133,20 +150,81 @@ async function main() {
   await makeQuestion("VMC_DEP_CODE_VERIF", "Le code erreur a-t-il disparu après l'action ?", "CHOIX_UNIQUE",
     { ordre: 72, captureObligatoire: "PHOTO", aideTexte: "Photo de l'afficheur après intervention" });
 
-  // ═══ TRANSITIONS ═══════════════════════════════════════════════════
-  console.log("🔗 Création des transitions entre questions...");
+  // ═══════════════════════════════════════════════════════════════════
+  // ENTRETIEN PRÉVENTIF (7 étapes)
+  // ═══════════════════════════════════════════════════════════════════
+  await makeQuestion("VMC_ENT_CAISSON", "État général du caisson (encrassement, fixation) ?", "CHOIX_UNIQUE",
+    { ordre: 80, captureObligatoire: "PHOTO", aideTexte: "Photo générale du caisson avant nettoyage" });
+  await makeQuestion("VMC_ENT_BOUCHES", "Nettoyage des bouches d'extraction effectué ?", "CHOIX_UNIQUE",
+    { ordre: 81, captureObligatoire: "PHOTO", aideTexte: "Photo après nettoyage des bouches" });
+  await makeQuestion("VMC_ENT_FILTRES", "État des filtres (si double flux) ?", "CHOIX_UNIQUE",
+    { ordre: 82, captureObligatoire: "PHOTO", aideTexte: "G3/G4/F7 selon modèle. Choisir N/A si simple flux" });
+  await makeQuestion("VMC_ENT_GAINES", "Inspection visuelle des gaines accessibles ?", "CHOIX_UNIQUE",
+    { ordre: 83, captureObligatoire: "PHOTO", aideTexte: "Photo des gaines visibles (combles, placards)" });
+  await makeQuestion("VMC_ENT_DEBIT", "Mesure de débit de contrôle à la bouche SDB", "NUMERIQUE",
+    { ordre: 84, captureObligatoire: "MESURE", uniteAttendue: "m³/h",
+      aideTexte: "Anémomètre. Conforme si ≥ 30 m³/h en SDB" });
+
+  // ═══════════════════════════════════════════════════════════════════
+  // REMPLACEMENT (9 étapes)
+  // ═══════════════════════════════════════════════════════════════════
+  // Étape 1 déjà créée : VMC_REM_MARQUE_ANCIENNE (marque ancienne)
+  await makeQuestion("VMC_REM_PHOTO_ANCIEN", "Photo de l'ancien caisson avant dépose", "CHOIX_UNIQUE",
+    { ordre: 90, captureObligatoire: "PHOTO", aideTexte: "Photo du caisson en place avant démontage" });
+  await makeQuestion("VMC_REM_MARQUE_NEUVE", "Quelle est la marque de la nouvelle VMC installée ?", "CHOIX_UNIQUE",
+    { ordre: 91 });
+  await makeQuestion("VMC_REM_GAINES", "Les gaines existantes sont-elles conservées ou remplacées ?", "CHOIX_UNIQUE",
+    { ordre: 92, captureObligatoire: "PHOTO", aideTexte: "Photo des gaines après pose" });
+  await makeQuestion("VMC_REM_NB_BOUCHES", "Nombre de bouches installées", "NUMERIQUE",
+    { ordre: 93, uniteAttendue: "unités", aideTexte: "Compter toutes les bouches d'extraction posées" });
+  await makeQuestion("VMC_REM_DEBIT_SDB", "Mesure de débit à la bouche SDB après mise en service", "NUMERIQUE",
+    { ordre: 94, captureObligatoire: "MESURE", uniteAttendue: "m³/h",
+      aideTexte: "Anémomètre. Conforme si ≥ 30 m³/h en SDB" });
+  await makeQuestion("VMC_REM_DEBIT_WC", "Mesure de débit à la bouche WC après mise en service", "NUMERIQUE",
+    { ordre: 95, captureObligatoire: "MESURE", uniteAttendue: "m³/h",
+      aideTexte: "Conforme si ≥ 15 m³/h en WC" });
+  await makeQuestion("VMC_REM_PHOTO_FINAL", "Photo de l'installation finalisée", "CHOIX_UNIQUE",
+    { ordre: 96, captureObligatoire: "PHOTO", aideTexte: "Vue d'ensemble de l'installation terminée" });
+
+  // ═══════════════════════════════════════════════════════════════════
+  // INSTALLATION NEUVE (10 étapes)
+  // ═══════════════════════════════════════════════════════════════════
+  // Étape 1 déjà créée : VMC_INS_TYPE (type de VMC à installer)
+  await makeQuestion("VMC_INS_MARQUE", "Quelle est la marque du kit VMC installé ?", "CHOIX_UNIQUE",
+    { ordre: 110 });
+  await makeQuestion("VMC_INS_NB_PIECES", "Nombre de pièces raccordées au réseau", "NUMERIQUE",
+    { ordre: 111, uniteAttendue: "pièces", aideTexte: "SDB + WC + cuisine + éventuelles pièces humides" });
+  await makeQuestion("VMC_INS_GAINES_ML", "Linéaire total de gaines posées", "NUMERIQUE",
+    { ordre: 112, uniteAttendue: "m", aideTexte: "Estimer ou mesurer le linéaire total des gaines posées" });
+  await makeQuestion("VMC_INS_PHOTO_CAISSON", "Photo du caisson installé", "CHOIX_UNIQUE",
+    { ordre: 113, captureObligatoire: "PHOTO", aideTexte: "Photo du caisson en place avec branchements visibles" });
+  await makeQuestion("VMC_INS_PHOTO_GAINES", "Photo du parcours des gaines", "CHOIX_UNIQUE",
+    { ordre: 114, captureObligatoire: "PHOTO", aideTexte: "Photo du cheminement des gaines dans les combles ou placards" });
+  await makeQuestion("VMC_INS_ELEC", "Le raccordement électrique est-il conforme ?", "CHOIX_UNIQUE",
+    { ordre: 115, captureObligatoire: "PHOTO", aideTexte: "Photo du tableau et du raccordement dédié VMC" });
+  await makeQuestion("VMC_INS_DEBIT_SDB", "Mesure de débit à la bouche SDB", "NUMERIQUE",
+    { ordre: 116, captureObligatoire: "MESURE", uniteAttendue: "m³/h",
+      aideTexte: "Anémomètre. Conforme si ≥ 30 m³/h en SDB" });
+  await makeQuestion("VMC_INS_DEBIT_CUISINE", "Mesure de débit à la bouche cuisine", "NUMERIQUE",
+    { ordre: 117, captureObligatoire: "MESURE", uniteAttendue: "m³/h",
+      aideTexte: "Conforme si ≥ 45 m³/h en cuisine ouverte, ≥ 30 m³/h en cuisine fermée" });
+
+  // ═══════════════════════════════════════════════════════════════════
+  // TRANSITIONS
+  // ═══════════════════════════════════════════════════════════════════
+  console.log("🔗 Création des transitions...");
 
   // ── Niveau 0 : motif → 4 branches ─────────────────────────────
   await prisma.reponsePossible.createMany({
     data: [
       { questionId: Q.VMC_ENTREE_MOTIF.id, valeur: "entretien", libelle: "Entretien préventif", ordre: 1, questionSuivanteId: Q.VMC_ENT_TYPE.id },
       { questionId: Q.VMC_ENTREE_MOTIF.id, valeur: "depannage", libelle: "Dépannage (panne signalée)", ordre: 2, questionSuivanteId: Q.VMC_DEP_SYMPT.id },
-      { questionId: Q.VMC_ENTREE_MOTIF.id, valeur: "remplacement", libelle: "Remplacement (fin de vie)", ordre: 3, questionSuivanteId: Q.VMC_REM_CONFIRM.id },
-      { questionId: Q.VMC_ENTREE_MOTIF.id, valeur: "installation", libelle: "Installation / mise en service", ordre: 4, questionSuivanteId: Q.VMC_INS_DEBUT.id },
+      { questionId: Q.VMC_ENTREE_MOTIF.id, valeur: "remplacement", libelle: "Remplacement (fin de vie)", ordre: 3, questionSuivanteId: Q.VMC_REM_MARQUE_ANCIENNE.id },
+      { questionId: Q.VMC_ENTREE_MOTIF.id, valeur: "installation", libelle: "Installation / mise en service", ordre: 4, questionSuivanteId: Q.VMC_INS_TYPE.id },
     ],
   });
 
-  // ── Niveau 1 : symptôme → 5 sous-arbres ──────────────────────
+  // ── DÉPANNAGE : symptôme → 5 sous-arbres ──────────────────────
   await prisma.reponsePossible.createMany({
     data: [
       { questionId: Q.VMC_DEP_SYMPT.id, valeur: "ne_fonctionne_plus", libelle: "Ne fonctionne plus (silencieuse)", ordre: 1, questionSuivanteId: Q.VMC_DEP_NF_ALIM.id },
@@ -157,7 +235,7 @@ async function main() {
     ],
   });
 
-  // ── Sous-arbre 1 : Ne fonctionne plus ────────────────────────
+  // ── Dépannage SA 1 : Ne fonctionne plus ──────────────────────
   await prisma.reponsePossible.createMany({
     data: [
       { questionId: Q.VMC_DEP_NF_ALIM.id, valeur: "oui", libelle: "Oui, présente", ordre: 1, questionSuivanteId: Q.VMC_DEP_NF_DISJ.id },
@@ -174,7 +252,7 @@ async function main() {
     ],
   });
 
-  // ── Sous-arbre 2 : Bruit anormal ─────────────────────────────
+  // ── Dépannage SA 2 : Bruit anormal ───────────────────────────
   await prisma.reponsePossible.createMany({
     data: [
       { questionId: Q.VMC_DEP_BRUIT_TYPE.id, valeur: "vibration", libelle: "Vibration / claquement", ordre: 1, questionSuivanteId: Q.VMC_DEP_BRUIT_CAISSON.id },
@@ -193,7 +271,7 @@ async function main() {
     ],
   });
 
-  // ── Sous-arbre 3 : Débit insuffisant ─────────────────────────
+  // ── Dépannage SA 3 : Débit insuffisant ───────────────────────
   await prisma.reponsePossible.createMany({
     data: [
       { questionId: Q.VMC_DEP_DEBIT_MESURE_INIT.id, valeur: "saisi", libelle: "Mesure saisie", ordre: 1, questionSuivanteId: Q.VMC_DEP_DEBIT_BOUCHES.id },
@@ -211,7 +289,7 @@ async function main() {
     ],
   });
 
-  // ── Sous-arbre 4 : Humidité persistante ──────────────────────
+  // ── Dépannage SA 4 : Humidité persistante ────────────────────
   await prisma.reponsePossible.createMany({
     data: [
       { questionId: Q.VMC_DEP_HUM_FLUX.id, valeur: "oui", libelle: "Oui, flux correct (aspiration)", ordre: 1, questionSuivanteId: Q.VMC_DEP_HUM_DEBIT.id },
@@ -227,16 +305,91 @@ async function main() {
     ],
   });
 
-  // ── Sous-arbre 5 : Code erreur ───────────────────────────────
+  // ── Dépannage SA 5 : Code erreur ─────────────────────────────
   await prisma.reponsePossible.createMany({
     data: [
       { questionId: Q.VMC_DEP_CODE_SAISIE.id, valeur: "saisi", libelle: "Code saisi", ordre: 1, questionSuivanteId: Q.VMC_DEP_CODE_ACTION.id },
-
       { questionId: Q.VMC_DEP_CODE_ACTION.id, valeur: "oui", libelle: "Oui, action effectuée", ordre: 1, questionSuivanteId: Q.VMC_DEP_CODE_VERIF.id },
       { questionId: Q.VMC_DEP_CODE_ACTION.id, valeur: "non", libelle: "Non — escalade constructeur", ordre: 2, actionSuivante: "ESCALADE" },
-
       { questionId: Q.VMC_DEP_CODE_VERIF.id, valeur: "oui", libelle: "Oui, code disparu — résolu", ordre: 1, questionSuivanteId: Q.VMC_CLOTURE_SIGNATURE.id },
       { questionId: Q.VMC_DEP_CODE_VERIF.id, valeur: "non", libelle: "Non, code persistant — escalade", ordre: 2, actionSuivante: "ESCALADE" },
+    ],
+  });
+
+  // ── ENTRETIEN : type → caisson → bouches → filtres → gaines → débit ──
+  await prisma.reponsePossible.createMany({
+    data: [
+      { questionId: Q.VMC_ENT_TYPE.id, valeur: "simple_flux", libelle: "Simple flux autoréglable", ordre: 1, questionSuivanteId: Q.VMC_ENT_CAISSON.id },
+      { questionId: Q.VMC_ENT_TYPE.id, valeur: "hygro", libelle: "Simple flux hygroréglable", ordre: 2, questionSuivanteId: Q.VMC_ENT_CAISSON.id },
+      { questionId: Q.VMC_ENT_TYPE.id, valeur: "double_flux", libelle: "Double flux", ordre: 3, questionSuivanteId: Q.VMC_ENT_CAISSON.id },
+
+      { questionId: Q.VMC_ENT_CAISSON.id, valeur: "ok", libelle: "Caisson en bon état", ordre: 1, questionSuivanteId: Q.VMC_ENT_BOUCHES.id },
+      { questionId: Q.VMC_ENT_CAISSON.id, valeur: "encrasse", libelle: "Encrassé — à nettoyer", ordre: 2, questionSuivanteId: Q.VMC_ENT_BOUCHES.id },
+      { questionId: Q.VMC_ENT_CAISSON.id, valeur: "degrade", libelle: "Dégradé — remplacement recommandé", ordre: 3, actionSuivante: "ESCALADE" },
+
+      { questionId: Q.VMC_ENT_BOUCHES.id, valeur: "fait", libelle: "Oui, nettoyage effectué", ordre: 1, questionSuivanteId: Q.VMC_ENT_FILTRES.id },
+      { questionId: Q.VMC_ENT_BOUCHES.id, valeur: "non", libelle: "Non — bouches à remplacer", ordre: 2, questionSuivanteId: Q.VMC_ENT_FILTRES.id },
+
+      { questionId: Q.VMC_ENT_FILTRES.id, valeur: "propres", libelle: "Propres, conservés", ordre: 1, questionSuivanteId: Q.VMC_ENT_GAINES.id },
+      { questionId: Q.VMC_ENT_FILTRES.id, valeur: "remplaces", libelle: "Sales — remplacés", ordre: 2, questionSuivanteId: Q.VMC_ENT_GAINES.id },
+      { questionId: Q.VMC_ENT_FILTRES.id, valeur: "na", libelle: "N/A (simple flux)", ordre: 3, questionSuivanteId: Q.VMC_ENT_GAINES.id },
+
+      { questionId: Q.VMC_ENT_GAINES.id, valeur: "ok", libelle: "Gaines en bon état", ordre: 1, questionSuivanteId: Q.VMC_ENT_DEBIT.id },
+      { questionId: Q.VMC_ENT_GAINES.id, valeur: "degrade", libelle: "Dégradées — à reprendre", ordre: 2, actionSuivante: "ESCALADE" },
+
+      { questionId: Q.VMC_ENT_DEBIT.id, valeur: "saisi", libelle: "Mesure saisie", ordre: 1, questionSuivanteId: Q.VMC_CLOTURE_SIGNATURE.id },
+    ],
+  });
+
+  // ── REMPLACEMENT : marque ancienne → photo → marque neuve → gaines → bouches → débits → photo finale ──
+  const marquesRemAnc = MARQUES.map((m, i) => ({
+    questionId: Q.VMC_REM_MARQUE_ANCIENNE.id, valeur: m.valeur, libelle: m.libelle, ordre: i + 1,
+    questionSuivanteId: Q.VMC_REM_PHOTO_ANCIEN.id,
+  }));
+  const marquesRemNeuv = MARQUES.map((m, i) => ({
+    questionId: Q.VMC_REM_MARQUE_NEUVE.id, valeur: m.valeur, libelle: m.libelle, ordre: i + 1,
+    questionSuivanteId: Q.VMC_REM_GAINES.id,
+  }));
+  await prisma.reponsePossible.createMany({ data: [...marquesRemAnc, ...marquesRemNeuv] });
+
+  await prisma.reponsePossible.createMany({
+    data: [
+      { questionId: Q.VMC_REM_PHOTO_ANCIEN.id, valeur: "fait", libelle: "Photo prise", ordre: 1, questionSuivanteId: Q.VMC_REM_MARQUE_NEUVE.id },
+
+      { questionId: Q.VMC_REM_GAINES.id, valeur: "conservees", libelle: "Conservées telles quelles", ordre: 1, questionSuivanteId: Q.VMC_REM_NB_BOUCHES.id },
+      { questionId: Q.VMC_REM_GAINES.id, valeur: "partielles", libelle: "Remplacées partiellement", ordre: 2, questionSuivanteId: Q.VMC_REM_NB_BOUCHES.id },
+      { questionId: Q.VMC_REM_GAINES.id, valeur: "completes", libelle: "Remplacées complètement", ordre: 3, questionSuivanteId: Q.VMC_REM_NB_BOUCHES.id },
+
+      { questionId: Q.VMC_REM_NB_BOUCHES.id, valeur: "saisi", libelle: "Nombre saisi", ordre: 1, questionSuivanteId: Q.VMC_REM_DEBIT_SDB.id },
+      { questionId: Q.VMC_REM_DEBIT_SDB.id, valeur: "saisi", libelle: "Mesure saisie", ordre: 1, questionSuivanteId: Q.VMC_REM_DEBIT_WC.id },
+      { questionId: Q.VMC_REM_DEBIT_WC.id, valeur: "saisi", libelle: "Mesure saisie", ordre: 1, questionSuivanteId: Q.VMC_REM_PHOTO_FINAL.id },
+      { questionId: Q.VMC_REM_PHOTO_FINAL.id, valeur: "fait", libelle: "Photo prise", ordre: 1, questionSuivanteId: Q.VMC_CLOTURE_SIGNATURE.id },
+    ],
+  });
+
+  // ── INSTALLATION : type → marque → nb pièces → gaines ml → photos → élec → débits ──
+  const marquesIns = MARQUES.map((m, i) => ({
+    questionId: Q.VMC_INS_MARQUE.id, valeur: m.valeur, libelle: m.libelle, ordre: i + 1,
+    questionSuivanteId: Q.VMC_INS_NB_PIECES.id,
+  }));
+  await prisma.reponsePossible.createMany({ data: marquesIns });
+
+  await prisma.reponsePossible.createMany({
+    data: [
+      { questionId: Q.VMC_INS_TYPE.id, valeur: "simple_auto", libelle: "Simple flux autoréglable", ordre: 1, questionSuivanteId: Q.VMC_INS_MARQUE.id },
+      { questionId: Q.VMC_INS_TYPE.id, valeur: "simple_hygro", libelle: "Simple flux hygroréglable", ordre: 2, questionSuivanteId: Q.VMC_INS_MARQUE.id },
+      { questionId: Q.VMC_INS_TYPE.id, valeur: "double_flux", libelle: "Double flux", ordre: 3, questionSuivanteId: Q.VMC_INS_MARQUE.id },
+
+      { questionId: Q.VMC_INS_NB_PIECES.id, valeur: "saisi", libelle: "Nombre saisi", ordre: 1, questionSuivanteId: Q.VMC_INS_GAINES_ML.id },
+      { questionId: Q.VMC_INS_GAINES_ML.id, valeur: "saisi", libelle: "Linéaire saisi", ordre: 1, questionSuivanteId: Q.VMC_INS_PHOTO_CAISSON.id },
+      { questionId: Q.VMC_INS_PHOTO_CAISSON.id, valeur: "fait", libelle: "Photo prise", ordre: 1, questionSuivanteId: Q.VMC_INS_PHOTO_GAINES.id },
+      { questionId: Q.VMC_INS_PHOTO_GAINES.id, valeur: "fait", libelle: "Photo prise", ordre: 1, questionSuivanteId: Q.VMC_INS_ELEC.id },
+
+      { questionId: Q.VMC_INS_ELEC.id, valeur: "oui", libelle: "Oui, conforme", ordre: 1, questionSuivanteId: Q.VMC_INS_DEBIT_SDB.id },
+      { questionId: Q.VMC_INS_ELEC.id, valeur: "non", libelle: "Non — escalade électricien", ordre: 2, actionSuivante: "ESCALADE" },
+
+      { questionId: Q.VMC_INS_DEBIT_SDB.id, valeur: "saisi", libelle: "Mesure saisie", ordre: 1, questionSuivanteId: Q.VMC_INS_DEBIT_CUISINE.id },
+      { questionId: Q.VMC_INS_DEBIT_CUISINE.id, valeur: "saisi", libelle: "Mesure saisie", ordre: 1, questionSuivanteId: Q.VMC_CLOTURE_SIGNATURE.id },
     ],
   });
 
@@ -245,27 +398,18 @@ async function main() {
     data: { questionId: Q.VMC_CLOTURE_SIGNATURE.id, valeur: "signe", libelle: "Signature recueillie", ordre: 1, actionSuivante: "CLOTURE" },
   });
 
-  // ── Stubs des branches non-dépannage (clôture directe) ───────
-  await prisma.reponsePossible.createMany({
-    data: [
-      { questionId: Q.VMC_ENT_TYPE.id, valeur: "stub", libelle: "À détailler en phase 2", ordre: 1, actionSuivante: "CLOTURE" },
-      { questionId: Q.VMC_REM_CONFIRM.id, valeur: "stub", libelle: "À détailler en phase 2", ordre: 1, actionSuivante: "CLOTURE" },
-      { questionId: Q.VMC_INS_DEBUT.id, valeur: "stub", libelle: "À détailler en phase 2", ordre: 1, actionSuivante: "CLOTURE" },
-    ],
-  });
-
+  console.log("");
   console.log("✅ Seed terminé.");
   console.log(`   Questions créées : ${await prisma.question.count()}`);
   console.log(`   Transitions     : ${await prisma.reponsePossible.count()}`);
   console.log(`   Intervenants    : ${await prisma.intervenant.count()}`);
   console.log(`   Clients         : ${await prisma.client.count()}`);
   console.log("");
-  console.log("🌳 Sous-arbres Dépannage complets :");
-  console.log("   ✓ Ne fonctionne plus (5 étapes)");
-  console.log("   ✓ Bruit anormal (4 étapes)");
-  console.log("   ✓ Débit insuffisant (5 étapes)");
-  console.log("   ✓ Humidité persistante (4 étapes)");
-  console.log("   ✓ Code erreur double flux (3 étapes)");
+  console.log("🌳 Parcours complets :");
+  console.log("   ✓ ENTRETIEN préventif (5 étapes)");
+  console.log("   ✓ DÉPANNAGE (5 sous-arbres)");
+  console.log("   ✓ REMPLACEMENT (8 étapes)");
+  console.log("   ✓ INSTALLATION neuve (9 étapes)");
 }
 
 main()

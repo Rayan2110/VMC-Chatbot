@@ -46,6 +46,7 @@ enum ActionSuivante {
 }
 
 enum MotifIntervention {
+  EN_ATTENTE
   ENTRETIEN
   DEPANNAGE
   REMPLACEMENT

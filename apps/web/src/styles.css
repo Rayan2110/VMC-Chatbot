@@ -601,3 +601,599 @@ body {
 .recap-actions .btn-primary-full {
   flex: 2;
 }
+
+/* ═══ ADMIN PAGE ═══════════════════════════════════════════ */
+
+/* Header link vers admin */
+.chat-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chat-header-admin-link {
+  font-size: 13px;
+  color: var(--primary);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.chat-header-admin-link:hover {
+  background: var(--primary-light);
+  border-color: var(--primary);
+}
+
+/* Login admin */
+.admin-login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  padding: 20px;
+}
+
+.admin-login-card {
+  background: var(--surface);
+  padding: 40px 32px;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+}
+
+.admin-login-icon { font-size: 40px; margin-bottom: 12px; }
+
+.admin-login-card h2 {
+  font-size: 22px;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+
+.admin-login-sub {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.admin-login-input {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 16px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 12px;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+.admin-login-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.admin-login-err {
+  color: var(--danger);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.admin-login-back {
+  display: block;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.admin-login-back:hover { text-decoration: underline; }
+
+/* Dashboard */
+.admin-dashboard {
+  min-height: 100vh;
+  background: var(--bg);
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-header h1 {
+  font-size: 22px;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.admin-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.admin-actions { display: flex; gap: 10px; align-items: center; }
+
+.admin-link {
+  font-size: 13px;
+  color: var(--primary);
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.admin-link:hover { background: var(--primary-light); }
+
+.admin-logout {
+  font-size: 13px;
+  padding: 8px 14px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.admin-logout:hover { background: #FCEBEB; color: var(--danger); border-color: var(--danger); }
+
+/* Stats */
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 18px 16px;
+  box-shadow: var(--shadow-sm);
+  border-left: 4px solid var(--border);
+}
+
+.stat-blue { border-left-color: var(--primary); }
+.stat-green { border-left-color: var(--success); }
+.stat-amber { border-left-color: var(--warning); }
+.stat-gray { border-left-color: var(--text-muted); }
+.stat-coral { border-left-color: #D85A30; }
+.stat-red { border-left-color: var(--danger); }
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Breakdown */
+.admin-breakdown {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.admin-breakdown-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-breakdown-card h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-dark);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-breakdown-card ul {
+  list-style: none;
+  padding: 0;
+}
+
+.admin-breakdown-card li {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 14px;
+}
+
+.admin-breakdown-card strong {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Filtres */
+.admin-filters {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 12px;
+}
+
+.admin-filters h2 {
+  font-size: 18px;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.admin-filters-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-filters-row select {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+
+/* Table liste */
+.admin-list {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.admin-table thead {
+  background: var(--primary-light);
+}
+
+.admin-table th {
+  padding: 12px 14px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--primary-dark);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #F0EDE4;
+}
+
+.admin-table tbody tr:hover {
+  background: #FAFAF5;
+}
+
+.admin-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 40px !important;
+  font-style: italic;
+}
+
+.admin-count {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.admin-btn-detail {
+  padding: 6px 12px;
+  background: var(--surface);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.admin-btn-detail:hover { background: var(--primary); color: #fff; }
+
+/* Statut badges */
+.statut-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statut-gray { background: #E5E2D8; color: #5F5E5A; }
+.statut-green { background: #EAF3DE; color: #3B6D11; }
+.statut-amber { background: #FAEEDA; color: #854F0B; }
+.statut-red { background: #FCEBEB; color: #791F1F; }
+
+/* Modal détail */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.2s;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius);
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: modalIn 0.25s ease-out;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header {
+  padding: 16px 24px;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 { font-size: 18px; font-weight: 600; }
+
+.modal-close {
+  background: transparent;
+  color: #fff;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.modal-close:hover { background: rgba(255,255,255,0.15); }
+
+.modal-content {
+  padding: 20px 24px;
+  overflow-y: auto;
+}
+
+.detail-section { margin-bottom: 20px; }
+
+.detail-section h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-dark);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.detail-item-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.detail-item-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.detail-list {
+  list-style: none;
+  padding: 0;
+}
+
+.detail-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid #F0EDE4;
+  font-size: 13px;
+}
+
+.detail-list li:last-child { border-bottom: none; }
+
+.detail-list li span { color: var(--text-muted); flex: 1; }
+
+.detail-list li strong {
+  color: var(--text);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.detail-photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 8px;
+}
+
+.detail-photo {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.detail-signature {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.detail-comment {
+  padding: 10px 12px;
+  background: var(--primary-light);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--primary-dark);
+  margin-bottom: 8px;
+  font-style: italic;
+}
+
+@media (max-width: 700px) {
+  .admin-table { font-size: 12px; }
+  .admin-table th, .admin-table td { padding: 8px 6px; }
+  .admin-table th:nth-child(4), .admin-table td:nth-child(4) { display: none; }
+}
+
+/* ═══ EXPORT PDF — styles pour le modal et l'impression ═══════ */
+
+.modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-pdf-btn {
+  padding: 6px 12px;
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+
+.modal-pdf-btn:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+/* Styles d'impression : afficher uniquement le modal détail */
+@media print {
+  /* Étape 1 : masquer tout par défaut */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Étape 2 : ré-afficher uniquement le modal et ses enfants */
+  .modal-overlay, .modal-overlay * {
+    visibility: visible;
+  }
+
+  /* Étape 3 : masquer spécifiquement les éléments non imprimables du modal */
+  .modal-header, .modal-pdf-btn, .modal-close, .recap-actions {
+    display: none !important;
+  }
+
+  /* Étape 4 : faire que le modal remplisse la page */
+  .modal-overlay {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: auto !important;
+    background: #fff !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+
+  .modal {
+    position: static !important;
+    max-width: none !important;
+    max-height: none !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    animation: none !important;
+  }
+
+  .modal-content {
+    padding: 20px !important;
+    overflow: visible !important;
+  }
+
+  /* Conserver les couleurs lors de l'impression */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* En-tête du PDF (remplace le bandeau bleu du modal) */
+  .modal-content::before {
+    content: "Compte rendu d'intervention — Marques Confort";
+    display: block;
+    visibility: visible;
+    font-size: 18px;
+    font-weight: 600;
+    color: #185FA5;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+    border-bottom: 2px solid #185FA5;
+  }
+
+  /* Éviter les coupures disgracieuses */
+  .detail-section, .detail-photo, .detail-signature {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .detail-section {
+    margin-bottom: 16px;
+  }
+
+  /* Grille de photos plus compacte en PDF */
+  .detail-photos {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+  .detail-photo {
+    height: 90px !important;
+  }
+}

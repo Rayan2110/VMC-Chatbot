@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
-const API = import.meta.env.VITE_API_URL || "/api";
+const API = "/api";
 
 async function api(path, opts = {}) {
   const r = await fetch(`${API}${path}`, {
@@ -24,107 +24,219 @@ const INTENTIONS = [
   {
     code: "URGENCE",
     motsCles: [
-      "urgent", "urgence", "danger", "dangereux",
-      "brûlé", "brulé", "brule",
-      "fumée", "fumee", "fuite gaz", "odeur gaz", "court-circuit", "court circuit",
-      "électrocution", "electrocution", "choc électrique", "choc electrique",
-      "feu", "flamme", "étincelle", "etincelle",
-      "danger immédiat", "danger immediat", "risque sécurité", "risque securite",
-      "ça sent", "ca sent", "odeur bizarre",
-      "carbonisé", "carbonise", "ça chauffe trop", "ca chauffe trop",
-      "brûlant au toucher", "brulant au toucher",
+      "urgent", "urgence", "urgences", "danger", "dangereux", "dangereuse",
+      "risque grave", "risque sécurité", "risque securite", "risque électrique", "risque electrique",
+      "danger immédiat", "danger immediat", "mise en sécurité", "mise en securite",
+      "à sécuriser", "a securiser", "sécuriser immédiatement", "securiser immediatement",
+      "brûlé", "brulé", "brule", "brûle",
+      "ça brûle", "ca brule", "ça brule",
+      "fumée", "fumee", "ça fume", "ca fume",
+      "feu", "flamme", "flammes", "étincelle", "etincelle", "étincelles", "etincelles",
+      "incendie", "départ de feu", "depart de feu",
+      "ça sent le brûlé", "ca sent le brule", "ça sent le brulé",
+      "odeur de brûlé", "odeur de brulé", "odeur de brule",
+      "odeur forte", "odeur chimique", "odeur bizarre", "odeur suspecte",
+      "fuite gaz", "fuite de gaz", "odeur gaz", "odeur de gaz", "gaz qui sent",
+      "soupçon gaz", "soupcon gaz", "je sens le gaz",
+      "court-circuit", "court circuit", "cc électrique", "cc electrique",
+      "électrocution", "electrocution", "électrocuté", "electrocute",
+      "choc électrique", "choc electrique", "pris le jus",
+      "disjoncte sans arrêt", "disjoncte sans arret", "saute tout le temps",
+      "carbonisé", "carbonise", "carbonisée", "fondu", "fondue",
+      "ça chauffe trop", "ca chauffe trop", "anormalement chaud", "vraiment chaud",
+      "brûlant au toucher", "brulant au toucher", "trop chaud au toucher",
+      "surchauffe", "emballe", "s'emballe", "emballé", "emballee",
+      "attention danger", "appelle les secours", "appeler secours", "pompiers",
+      "j'évacue", "j evacue", "on évacue", "on evacue",
     ],
   },
   {
     code: "ESCALADE",
     motsCles: [
-      "escalader", "escalade", "remonter", "manager", "responsable", "chef",
-      "litige", "conflit", "refus", "refuse", "bloqué", "bloque", "impossible",
-      "je ne peux pas", "ne peux pas", "pas possible", "besoin aide",
-      "besoin d'aide", "problème client", "probleme client", "mécontent",
-      "mecontent", "plainte", "réclamation", "reclamation",
+      "escalader", "escalade", "escaladé", "escalade immédiate", "escalade immediate",
+      "remonter", "remonter au manager", "remonter au chef", "remonter en interne",
+      "manager", "responsable", "chef d'équipe", "chef d equipe", "chef de chantier",
+      "hiérarchie", "hierarchie", "direction", "patron",
+      "litige", "litigieux", "conflit", "conflictuel", "désaccord", "desaccord",
+      "refus client", "refuse de payer", "refuse payer", "refuse de signer", "refuse signer",
+      "refuse l'intervention", "refuse l intervention", "refuse les travaux",
+      "client mécontent", "client pas content", "client remonté", "client remonte",
+      "mécontent", "mecontent", "énervé", "enerve", "agacé", "agace",
+      "plainte", "réclamation", "reclamation", "se plaint", "se plaint de",
+      "menace", "menacé", "m'agresse", "agresse",
+      "bloqué", "bloque", "bloquée", "bloquee", "je bloque",
+      "impossible", "pas possible de", "ne peux pas", "je n'arrive pas", "j arrive pas",
+      "besoin aide", "besoin d'aide", "besoin d aide", "j'ai besoin d'aide",
+      "trop compliqué", "trop complique", "au-dessus de", "dépasse mes", "depasse mes",
+      "pas dans mes compétences", "pas dans mes competences", "pas mon domaine",
+      "je ne sais pas quoi faire", "je sais pas quoi faire",
+      "hors contrat", "hors devis", "hors garantie", "pas couvert",
+      "pas prévu", "pas prevu", "pas dans le devis",
     ],
   },
   {
     code: "CLIENT_ABSENT",
     motsCles: [
-      "client absent", "pas de client", "personne", "pas sur place", "pas là",
-      "pas la", "absent", "vide", "fermé", "ferme", "injoignable",
-      "ne répond pas", "ne repond pas", "porte fermée", "porte fermee",
+      "client absent", "client pas là", "client pas la", "pas de client",
+      "pas sur place", "pas présent", "pas present", "absent du logement",
+      "ne répond pas à la porte", "ne repond pas a la porte", "personne pour ouvrir",
+      "personne ne répond", "personne ne repond", "injoignable",
+      "porte fermée à clé", "porte fermee a cle", "logement fermé", "logement ferme",
+      "pas de réponse", "pas de reponse", "personne chez lui", "personne chez elle",
+      "en déplacement", "en deplacement", "en vacances", "en voyage",
+      "parti au travail", "au boulot", "pas rentré", "pas rentre",
+      "rendez-vous manqué", "rdv manqué", "rdv manque",
+      "a oublié", "a oublie", "il a oublié", "elle a oublié",
     ],
   },
   {
     code: "ACCES",
     motsCles: [
-      "accès", "acces", "inaccessible", "pas d'accès", "pas acces", "trappe",
-      "clé", "cle", "code", "syndic", "gardien", "digicode", "interphone",
-      "portail", "condamné", "condamne", "coincé", "coince", "bloquée",
-      "bloquee", "ouvrir", "ouverture",
+      "inaccessible", "pas d'accès", "pas d acces", "accès bloqué", "acces bloque",
+      "accès impossible", "acces impossible", "pas moyen d'accéder", "pas moyen d acceder",
+      "trappe", "trappe condamnée", "trappe condamnee", "trappe bloquée", "trappe bloquee",
+      "trappe ne s'ouvre pas", "trappe ne s ouvre pas",
+      "comble inaccessible", "combles inaccessibles", "passage trop petit",
+      "trop étroit", "trop etroit", "je ne passe pas", "passe pas",
+      "caisson enfermé", "caisson enferme", "caisson encastré", "caisson encastre",
+      "pas de clé", "pas de cle", "clé manquante", "cle manquante",
+      "clé perdue", "cle perdue", "code inconnu", "code erroné", "code errone",
+      "digicode ne fonctionne pas", "interphone en panne", "interphone HS",
+      "syndic pas joignable", "gardien absent", "gardien pas là", "gardien pas la",
+      "attente du syndic", "attente syndic",
+      "encombré", "encombre", "encombrement", "obstrué", "obstrue", "obstruée", "obstruee",
+      "meubles devant", "meuble devant", "armoire devant", "rien accessible",
     ],
   },
   {
     code: "PIECE",
     motsCles: [
-      "pièce", "piece", "pieces", "pièces", "commander", "commande",
-      "référence", "reference", "ref ", "pas en stock", "rupture",
-      "approvisionnement", "appro", "fournisseur", "matériel", "materiel",
-      "moteur", "condensateur", "filtre", "courroie", "gaine", "bouche",
-      "à remplacer", "a remplacer", "remplacement", "neuf",
-      "grillé", "grille", "grillée",
-      "hs", "h.s.", "hors service",
-      "cramé", "crame", "cassé", "casse",
-      "défectueux", "defectueux", "défectueuse", "defectueuse",
-      "mort", "morte", "foutu", "foutue",
+      "pièce", "piece", "pieces", "pièces", "pièce détachée", "piece detachee",
+      "pièces détachées", "pieces detachees", "composant", "composants",
+      "matériel", "materiel", "équipement", "equipement",
+      "commander", "commande", "à commander", "a commander",
+      "passer commande", "faire la commande",
+      "référence", "reference", "ref ", "ref:", "numéro de pièce", "numero de piece",
+      "pas en stock", "rupture", "rupture de stock", "plus de stock", "stock vide",
+      "stock épuisé", "stock epuise", "indisponible", "non disponible",
+      "vérifier stock", "verifier stock", "voir si en stock",
+      "approvisionnement", "appro", "fournisseur", "délai fournisseur", "delai fournisseur",
+      "moteur", "mototurbine", "turbine", "ventilateur",
+      "condensateur", "condo", "capa", "capacité", "capacite",
+      "filtre", "filtres", "filtre G3", "filtre G4", "filtre F7",
+      "courroie", "courroies", "roulement", "roulements",
+      "gaine", "gaines", "bouche", "bouches", "bouche d'extraction", "bouche d extraction",
+      "manchette", "té", "te de jonction", "raccord",
+      "sonde", "sondes", "afficheur", "écran", "ecran", "carte électronique", "carte electronique",
+      "variateur", "transformateur", "relais",
+      "à remplacer", "a remplacer", "remplacement", "remplacer le",
+      "neuf", "changer", "à changer", "a changer", "changement",
+      "grillé", "grille", "grillée", "grillee", "grillés", "grilles",
+      "hs", "h.s.", "hors service", "hors d'usage", "hors d usage",
+      "cramé", "crame", "cramée", "cramee", "cramés",
+      "cassé", "casse", "cassée", "cassee", "en morceaux",
+      "défectueux", "defectueux", "défectueuse", "defectueuse", "défaillant", "defaillant",
+      "mort", "morte", "foutu", "foutue", "fichu", "fichue",
+      "en panne", "déglingué", "deglingue",
+      "usé", "use", "usée", "usee", "usure", "vétuste", "vetuste",
+      "vieilli", "fatigué", "fatigue", "en fin de vie", "fin de vie",
     ],
   },
   {
     code: "SUITES",
     motsCles: [
-      "revenir", "repasser", "retour", "reviens", "revienne", "à prévoir",
-      "a prevoir", "à faire", "a faire", "pas fini", "incomplet", "partiel",
-      "suites", "suite", "reste à faire", "reste a faire", "terminer",
-      "finir", "à finaliser", "a finaliser", "plus tard", "deuxième passage",
-      "deuxieme passage", "2e passage", "re-intervention", "réintervention",
-      "reintervention",
+      "revenir", "repasser", "retour", "à revenir", "a revenir",
+      "je reviens", "il faut revenir", "faut repasser", "devoir repasser",
+      "2e passage", "deuxième passage", "deuxieme passage",
+      "re-intervention", "réintervention", "reintervention",
+      "nouvelle intervention", "nouvelle visite", "prochaine intervention",
+      "pas fini", "pas terminé", "pas termine", "incomplet", "incomplète", "incomplete",
+      "partiel", "partiellement", "à moitié fait", "a moitie fait",
+      "reste à faire", "reste a faire", "il reste", "il reste à",
+      "à finaliser", "a finaliser", "à compléter", "a completer",
+      "à terminer", "a terminer", "finir plus tard", "finaliser plus tard",
+      "suites", "suite à donner", "suite a donner", "suite d'intervention",
+      "à suivre", "a suivre", "suivi nécessaire", "suivi necessaire",
+      "plus tard", "ultérieur", "ulterieur", "ultérieurement", "ulterieurement",
+      "dans quelques jours", "prochainement", "bientôt", "bientot",
     ],
   },
   {
     code: "DEVIS",
     motsCles: [
-      "devis", "chiffrer", "chiffrage", "estimation", "estimer", "prix",
-      "budget", "coût", "cout", "facture", "tarif", "proposition commerciale",
-      "proposition", "offre",
+      "devis", "devis à faire", "devis a faire", "faire un devis", "établir devis",
+      "proposition commerciale", "offre commerciale", "offre",
+      "chiffrer", "chiffrage", "à chiffrer", "a chiffrer",
+      "estimation", "estimer", "estimer le coût", "estimer le cout",
+      "prix", "tarif", "tarification", "tarifs", "coût", "cout", "coût des travaux", "cout des travaux",
+      "budget", "enveloppe budgétaire", "enveloppe budgetaire",
+      "combien ça coûte", "combien ca coute", "c'est combien", "c est combien",
+      "combien pour",
+      "facture", "à facturer", "a facturer", "facturation",
+      "travaux supplémentaires", "travaux supplementaires", "travaux complémentaires",
+      "rajout", "ajout de travaux", "extension", "sup à prévoir", "sup a prevoir",
     ],
   },
   {
     code: "RDV",
     motsCles: [
-      "rendez-vous", "rendez vous", "rdv", "demain", "après-demain",
-      "apres-demain", "apres demain", "semaine prochaine", "la semaine pro",
+      "rendez-vous", "rendez vous", "rdv", "r.d.v", "un rdv",
+      "caler un rdv", "fixer rdv", "prendre rdv", "donner rdv",
+      "planifier", "planification", "programmer", "reprogrammer",
+      "reporter", "repousser", "décaler", "decaler", "recaler",
+      "re-caler", "autre jour", "autre date", "autre créneau", "autre creneau",
+      "changer la date", "changer l'heure", "changer l heure",
       "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche",
-      "planifier", "reprogrammer", "reporter", "autre jour", "autre date",
-      "caler", "recaler",
+      "demain", "après-demain", "apres-demain", "apres demain",
+      "dans 2 jours", "dans deux jours", "dans 3 jours",
+      "semaine prochaine", "la semaine pro", "semaine qui vient",
+      "mois prochain", "dans 15 jours", "dans quinze jours",
+      "prochaine fois", "la prochaine fois",
+      "matinée", "matinee", "après-midi", "apres-midi", "apres midi",
+      "en fin de journée", "en fin de journee", "tôt le matin", "tot le matin",
     ],
   },
   {
     code: "DIAGNOSTIC",
     motsCles: [
-      "diagnostic", "diagnostique", "analyse", "analyser", "tester", "test",
-      "vérifier", "verifier", "vérifie", "verifie", "vérifié", "verifie",
-      "contrôler", "controler", "contrôle", "controle",
-      "inspection", "inspecter", "inspecte", "mesurer", "mesure",
-      "observer", "observe", "constat", "constater", "constate",
-      "anomalie", "défaut", "defaut", "dysfonctionnement", "panne",
-      "symptôme", "symptome",
+      "diagnostic", "diagnostique", "diag", "pré-diag", "pre-diag",
+      "analyse", "analyser", "j'analyse", "j analyse", "on analyse",
+      "tester", "test", "je teste", "on teste", "testé", "teste",
+      "vérifier", "verifier", "je vérifie", "je verifie", "vérifie", "verifie",
+      "vérifié", "à vérifier", "a verifier",
+      "contrôler", "controler", "je contrôle", "je controle", "contrôle", "controle",
+      "inspection", "inspecter", "inspecte", "j'inspecte", "j inspecte",
+      "examiner", "examen", "j'examine", "j examine",
+      "mesurer", "mesure", "je mesure", "prise de mesure",
+      "relever", "je relève", "je releve", "relevé", "releve",
+      "anémomètre", "anemometre", "multimètre", "multimetre", "capacimètre", "capacimetre",
+      "observer", "observe", "j'observe", "j observe", "observation",
+      "constat", "constater", "constate", "je constate", "constatation",
+      "regarder", "je regarde", "jetter un oeil", "jeter un oeil",
+      "anomalie", "anomalies", "défaut", "defaut", "défauts", "defauts",
+      "dysfonctionnement", "dysfonctionne", "problème", "probleme", "problèmes", "problemes",
+      "panne", "pannes", "en panne",
+      "symptôme", "symptome", "symptômes", "symptomes",
+      "bizarre", "étrange", "etrange", "anormal", "anormale",
+      "pas normal", "ne marche pas bien",
     ],
   },
   {
     code: "POSITIF",
     motsCles: [
-      "ok", "bien", "bon", "parfait", "nickel", "top", "correct", "conforme",
-      "opérationnel", "operationnel", "fonctionne", "marche", "en ordre",
-      "résolu", "resolu", "réglé", "regle", "terminé", "termine", "fini",
-      "rien à signaler", "rien a signaler", "ras",
+      "ok", "okay", "bien", "très bien", "tres bien", "bon", "très bon", "tres bon",
+      "parfait", "parfaitement", "nickel", "nickelle", "top", "au top",
+      "correct", "correcte", "conforme", "aux normes", "aux règles", "aux regles",
+      "opérationnel", "operationnel", "opérationnelle", "operationnelle",
+      "fonctionne bien", "ça fonctionne", "ca fonctionne", "ça marche", "ca marche",
+      "marche bien", "tourne bien", "en ordre", "en ordre de marche",
+      "résolu", "resolu", "résolue", "resolue", "problème résolu", "probleme resolu",
+      "réglé", "regle", "réglée", "reglee", "c'est réglé", "c est regle",
+      "terminé", "termine", "terminée", "terminee", "c'est terminé", "c est termine",
+      "fini", "finie", "c'est fini", "c est fini", "tout bon",
+      "rien à signaler", "rien a signaler", "ras", "r.a.s.", "r.a.s",
+      "tout va bien", "tout est ok", "tout est bon",
+      "intervention réussie", "intervention reussie", "réussi", "reussi",
     ],
   },
 ];
@@ -143,50 +255,147 @@ function detecterIntention(texte) {
 }
 
 // ═══ INTERPRÉTATION DES MESURES NUMÉRIQUES ════════════════════
-// Chaque question numérique peut avoir des seuils : { min, max, normeMin, normeMax }
-// Les interprétations génèrent des messages contextualisés (OK / alerte / hors norme).
+// Plages multiples pour donner un conseil métier précis selon la valeur saisie.
+// Chaque mesure peut avoir jusqu'à 5 niveaux : très bas / bas / OK / haut / très haut
 const SEUILS_MESURES = {
+  // ─── Débit à la bouche de SDB (norme arrêté 24/03/1982) ──────────────
+  // Norme : ≥ 30 m³/h en SDB, ≥ 15 m³/h en WC
   VMC_DEP_NF_DEBIT_FINAL: {
-    normeMin: 30,
-    messageOK: (v) => `✅ Débit ${v} m³/h conforme (norme : ≥ 30 m³/h en SDB).`,
-    messageBas: (v) => `⚠️ Débit ${v} m³/h en dessous de la norme (≥ 30 m³/h requis). Vérifier bouches et gaines.`,
+    plages: [
+      { max: 10, message: (v) => `❌ Débit ${v} m³/h critique (quasi nul). Cause probable : mototurbine HS, courroie cassée, ou gaine complètement obstruée. Escalade recommandée.` },
+      { max: 20, message: (v) => `⚠️ Débit ${v} m³/h très insuffisant (norme ≥ 30 m³/h SDB). Vérifier état moteur, bouches, filtres et gaines.` },
+      { max: 29, message: (v) => `⚠️ Débit ${v} m³/h en dessous de la norme (≥ 30 m³/h requis). Nettoyer bouches et vérifier gaines.` },
+      { max: 45, message: (v) => `✅ Débit ${v} m³/h conforme à la norme SDB (≥ 30 m³/h). Intervention efficace.` },
+      { max: 999, message: (v) => `⚠️ Débit ${v} m³/h anormalement élevé. Vérifier le réglage du variateur ou la présence d'une fuite dans les gaines.` },
+    ],
   },
   VMC_DEP_DEBIT_MESURE_INIT: {
-    normeMin: 30,
-    messageOK: (v) => `✅ Débit ${v} m³/h déjà conforme (≥ 30 m³/h). Vérifier tout de même l'installation.`,
-    messageBas: (v) => `⚠️ Débit ${v} m³/h insuffisant. Cause probable : bouches encrassées ou gaines obstruées.`,
+    plages: [
+      { max: 10, message: (v) => `❌ Débit ${v} m³/h quasi nul. Panne majeure probable : moteur, courroie, ou obstruction totale.` },
+      { max: 20, message: (v) => `⚠️ Débit ${v} m³/h très insuffisant. Cause probable : bouches très encrassées, filtres saturés ou gaines partiellement obstruées.` },
+      { max: 29, message: (v) => `⚠️ Débit ${v} m³/h insuffisant. Causes probables : bouches encrassées (première chose à vérifier), puis filtres et gaines.` },
+      { max: 45, message: (v) => `ℹ️ Débit ${v} m³/h déjà conforme (≥ 30 m³/h). Vérifier quand même l'installation pour détecter une cause latente.` },
+      { max: 999, message: (v) => `⚠️ Débit ${v} m³/h très élevé pour un symptôme "débit insuffisant". Revérifier la mesure à un autre endroit.` },
+    ],
   },
   VMC_DEP_DEBIT_MESURE_FIN: {
-    normeMin: 30,
-    messageOK: (v) => `✅ Débit final ${v} m³/h : intervention efficace, norme respectée.`,
-    messageBas: (v) => `⚠️ Débit final ${v} m³/h toujours insuffisant. Escalade possible si pas d'amélioration.`,
+    plages: [
+      { max: 20, message: (v) => `❌ Débit final ${v} m³/h toujours critique. Intervention non concluante, escalade fortement recommandée.` },
+      { max: 29, message: (v) => `⚠️ Débit final ${v} m³/h toujours sous norme (≥ 30 m³/h requis). Vérifier s'il reste un élément non diagnostiqué (moteur, condensateur).` },
+      { max: 45, message: (v) => `✅ Débit final ${v} m³/h conforme. Intervention efficace, norme respectée.` },
+      { max: 999, message: (v) => `✅ Débit final ${v} m³/h excellent. Attention à ne pas surdimensionner si le logement est petit (sur-ventilation = pertes énergétiques).` },
+    ],
   },
   VMC_DEP_HUM_DEBIT: {
-    normeMin: 30,
-    messageOK: (v) => `✅ Débit ${v} m³/h correct en pièce humide.`,
-    messageBas: (v) => `⚠️ Débit ${v} m³/h trop faible pour une pièce humide (≥ 30 m³/h requis).`,
+    plages: [
+      { max: 10, message: (v) => `❌ Débit ${v} m³/h quasi inexistant en pièce humide. L'humidité ne peut pas être évacuée. Panne majeure VMC.` },
+      { max: 20, message: (v) => `⚠️ Débit ${v} m³/h très insuffisant en pièce humide. Insuffisant pour évacuer l'humidité d'une SDB ou cuisine.` },
+      { max: 29, message: (v) => `⚠️ Débit ${v} m³/h en dessous de la norme. Probable cause de l'humidité persistante. Nettoyer bouches et vérifier filtres.` },
+      { max: 45, message: (v) => `✅ Débit ${v} m³/h correct en pièce humide. La ventilation fait bien son travail, l'humidité doit venir d'ailleurs (infiltration, ponts thermiques).` },
+      { max: 999, message: (v) => `✅ Débit ${v} m³/h excellent. La ventilation n'est pas en cause, vérifier cause externe.` },
+    ],
   },
+  // ─── Capacité condensateur démarrage VMC (plage typique 2-10 µF) ─────
   VMC_DEP_NF_CONDO: {
-    min: 2, max: 10,
-    messageOK: (v) => `✅ ${v} µF : valeur dans la plage normale (2 à 10 µF typique).`,
-    messageBas: (v) => `⚠️ ${v} µF : valeur faible, condensateur probablement HS. Remplacement recommandé.`,
-    messageHaut: (v) => `⚠️ ${v} µF : valeur anormalement élevée. Vérifier la référence du condensateur.`,
+    plages: [
+      { max: 0.5, message: (v) => `❌ ${v} µF : condensateur complètement HS (claqué). À remplacer impérativement, le moteur ne démarre pas sans lui.` },
+      { max: 1.5, message: (v) => `❌ ${v} µF : condensateur très affaibli. Remplacement immédiat requis.` },
+      { max: 2, message: (v) => `⚠️ ${v} µF : valeur basse. Si valeur nominale > 2 µF (voir étiquette), condensateur à remplacer.` },
+      { max: 10, message: (v) => `✅ ${v} µF : valeur dans la plage normale (2 à 10 µF typique). Comparer avec la valeur nominale gravée sur le composant (tolérance ±10%).` },
+      { max: 20, message: (v) => `⚠️ ${v} µF : valeur élevée. Vérifier la référence du condensateur — cette valeur est atypique pour une VMC résidentielle.` },
+      { max: 999, message: (v) => `⚠️ ${v} µF : valeur très anormale, probablement une erreur de mesure ou un condensateur inadapté.` },
+    ],
+  },
+  // ─── ENTRETIEN : débit contrôle SDB (≥ 30 m³/h) ──────────────────
+  VMC_ENT_DEBIT: {
+    plages: [
+      { max: 10, message: (v) => `❌ Débit ${v} m³/h critique. L'installation ne ventile quasiment plus, bascule recommandée vers un diagnostic Dépannage.` },
+      { max: 20, message: (v) => `⚠️ Débit ${v} m³/h très insuffisant. Nettoyage des bouches et filtres insuffisant — vérifier gaines et moteur.` },
+      { max: 29, message: (v) => `⚠️ Débit ${v} m³/h sous norme (≥ 30 m³/h requis). L'entretien doit se prolonger par un contrôle des gaines.` },
+      { max: 45, message: (v) => `✅ Débit ${v} m³/h conforme. Entretien validé, installation fonctionnelle.` },
+      { max: 999, message: (v) => `✅ Débit ${v} m³/h excellent. Attention à ne pas sur-ventiler (pertes énergétiques accrues en hiver).` },
+    ],
+  },
+  // ─── REMPLACEMENT : débit SDB après pose (≥ 30 m³/h) ─────────────
+  VMC_REM_DEBIT_SDB: {
+    plages: [
+      { max: 15, message: (v) => `❌ Débit ${v} m³/h critique après remplacement. Vérifier le branchement du nouveau moteur et l'étanchéité des gaines.` },
+      { max: 29, message: (v) => `⚠️ Débit ${v} m³/h sous norme après pose. Revérifier raccordement gaines et mode de fonctionnement de la nouvelle VMC.` },
+      { max: 45, message: (v) => `✅ Débit ${v} m³/h conforme (≥ 30 m³/h en SDB). Remplacement validé.` },
+      { max: 70, message: (v) => `✅ Débit ${v} m³/h excellent. Nouvelle VMC performante.` },
+      { max: 999, message: (v) => `⚠️ Débit ${v} m³/h anormalement élevé. Vérifier mode "grand débit" actif ou réglage du variateur.` },
+    ],
+  },
+  // ─── REMPLACEMENT : débit WC après pose (≥ 15 m³/h) ──────────────
+  VMC_REM_DEBIT_WC: {
+    plages: [
+      { max: 5, message: (v) => `❌ Débit ${v} m³/h critique en WC. Vérifier obstruction bouche ou branchement.` },
+      { max: 14, message: (v) => `⚠️ Débit ${v} m³/h sous norme WC (≥ 15 m³/h requis). Ajuster bouche ou vérifier le T de raccordement.` },
+      { max: 30, message: (v) => `✅ Débit ${v} m³/h conforme en WC (≥ 15 m³/h). Pose validée.` },
+      { max: 999, message: (v) => `✅ Débit ${v} m³/h excellent en WC. Bon dimensionnement.` },
+    ],
+  },
+  // ─── REMPLACEMENT : nombre de bouches (typique 2-8 pour résidentiel) ──
+  VMC_REM_NB_BOUCHES: {
+    plages: [
+      { max: 1, message: (v) => `⚠️ ${v} bouche : très faible. Vérifier si toutes les pièces humides sont bien équipées (SDB, WC, cuisine).` },
+      { max: 4, message: (v) => `✅ ${v} bouches : dimensionnement classique pour un T2-T3.` },
+      { max: 8, message: (v) => `✅ ${v} bouches : dimensionnement cohérent pour un T4-T5 ou maison.` },
+      { max: 15, message: (v) => `ℹ️ ${v} bouches : grand logement. Vérifier que le caisson est dimensionné pour ce débit total.` },
+      { max: 999, message: (v) => `⚠️ ${v} bouches : très élevé pour une installation résidentielle. Vérifier que ce n'est pas un local tertiaire.` },
+    ],
+  },
+  // ─── INSTALLATION : nombre de pièces raccordées ──────────────────
+  VMC_INS_NB_PIECES: {
+    plages: [
+      { max: 1, message: (v) => `⚠️ ${v} pièce raccordée : très peu. Vérifier que toutes les pièces humides sont bien reliées (SDB + WC + cuisine minimum requis).` },
+      { max: 3, message: (v) => `✅ ${v} pièces raccordées : dimensionnement standard pour un logement compact.` },
+      { max: 6, message: (v) => `✅ ${v} pièces raccordées : configuration classique logement familial.` },
+      { max: 10, message: (v) => `ℹ️ ${v} pièces raccordées : grand logement. S'assurer que le caisson supporte le débit cumulé.` },
+      { max: 999, message: (v) => `⚠️ ${v} pièces raccordées : dimensionnement très important. Vérifier cohérence avec la puissance du caisson.` },
+    ],
+  },
+  // ─── INSTALLATION : linéaire de gaines (m) ───────────────────────
+  VMC_INS_GAINES_ML: {
+    plages: [
+      { max: 5, message: (v) => `ℹ️ ${v} m de gaines : installation très compacte. Vérifier que toutes les bouches sont raccordées.` },
+      { max: 20, message: (v) => `✅ ${v} m de gaines : installation standard pour un appartement ou une petite maison.` },
+      { max: 40, message: (v) => `✅ ${v} m de gaines : installation moyenne (maison individuelle classique).` },
+      { max: 60, message: (v) => `ℹ️ ${v} m de gaines : installation étendue. Vérifier pertes de charge et puissance aspiration.` },
+      { max: 999, message: (v) => `⚠️ ${v} m de gaines : installation très longue. Risque de pertes de charge importantes, dimensionnement moteur à vérifier.` },
+    ],
+  },
+  // ─── INSTALLATION : débit SDB post-pose (≥ 30 m³/h) ─────────────
+  VMC_INS_DEBIT_SDB: {
+    plages: [
+      { max: 15, message: (v) => `❌ Débit ${v} m³/h critique après installation. Vérifier raccordement gaines, sens moteur, réglage bouches.` },
+      { max: 29, message: (v) => `⚠️ Débit ${v} m³/h sous norme après installation neuve. Ajuster réglage bouches ou mode variateur.` },
+      { max: 45, message: (v) => `✅ Débit ${v} m³/h conforme (≥ 30 m³/h). Installation validée pour SDB.` },
+      { max: 70, message: (v) => `✅ Débit ${v} m³/h excellent. Installation bien dimensionnée.` },
+      { max: 999, message: (v) => `⚠️ Débit ${v} m³/h très élevé. Ajuster réglage pour éviter sur-ventilation.` },
+    ],
+  },
+  // ─── INSTALLATION : débit cuisine (≥ 45 m³/h ouverte) ────────────
+  VMC_INS_DEBIT_CUISINE: {
+    plages: [
+      { max: 20, message: (v) => `❌ Débit ${v} m³/h très insuffisant en cuisine. Diagnostic nécessaire avant mise en service.` },
+      { max: 29, message: (v) => `⚠️ Débit ${v} m³/h sous norme cuisine (≥ 30 m³/h minimum en cuisine fermée).` },
+      { max: 44, message: (v) => `⚠️ Débit ${v} m³/h OK pour cuisine fermée, mais sous norme cuisine ouverte (≥ 45 m³/h requis).` },
+      { max: 80, message: (v) => `✅ Débit ${v} m³/h conforme cuisine ouverte (≥ 45 m³/h). Installation validée.` },
+      { max: 135, message: (v) => `✅ Débit ${v} m³/h élevé : mode grand débit probablement actif, parfait pour cuisson.` },
+      { max: 999, message: (v) => `ℹ️ Débit ${v} m³/h très élevé. Confirmer que c'est bien le mode "grand débit" cuisine et pas une anomalie.` },
+    ],
   },
 };
 
 function interpreterMesure(questionCode, valeur) {
   const seuils = SEUILS_MESURES[questionCode];
-  if (!seuils) return null;
+  if (!seuils || !seuils.plages) return null;
   const v = parseFloat(valeur);
   if (isNaN(v)) return null;
-
-  if (seuils.normeMin !== undefined) {
-    return v >= seuils.normeMin ? seuils.messageOK(v) : seuils.messageBas(v);
-  }
-  if (seuils.min !== undefined && seuils.max !== undefined) {
-    if (v < seuils.min) return seuils.messageBas(v);
-    if (v > seuils.max) return seuils.messageHaut(v);
-    return seuils.messageOK(v);
+  // Parcourt les plages dans l'ordre, retourne le premier match
+  for (const plage of seuils.plages) {
+    if (v <= plage.max) return plage.message(v);
   }
   return null;
 }
@@ -216,16 +425,21 @@ export default function App() {
             <div className="chat-header-sub">Marques Confort</div>
           </div>
         </div>
-        <select
-          className="intervenant-select"
-          value={intervenantId || ""}
-          onChange={(e) => setIntervenantId(parseInt(e.target.value, 10))}
-        >
-          <option value="">Je suis…</option>
-          {intervenants.map((i) => (
-            <option key={i.id} value={i.id}>{i.prenom} {i.nom}</option>
-          ))}
-        </select>
+        <div className="chat-header-right">
+          <a href="/admin" className="chat-header-admin-link" title="Espace manager">
+            📊 Suivi
+          </a>
+          <select
+            className="intervenant-select"
+            value={intervenantId || ""}
+            onChange={(e) => setIntervenantId(parseInt(e.target.value, 10))}
+          >
+            <option value="">Je suis…</option>
+            {intervenants.map((i) => (
+              <option key={i.id} value={i.id}>{i.prenom} {i.nom}</option>
+            ))}
+          </select>
+        </div>
       </header>
 
       {!intervenantActif ? (
@@ -309,7 +523,7 @@ function ChatFlow({ intervenant, clients }) {
         intervenantId: intervenant.id,
         clientId,
         adresseSite: adresseFinale,
-        motif: "DEPANNAGE",
+        motif: "EN_ATTENTE", // provisoire, sera mis à jour à la première réponse
       },
     });
     setIntervention(interv);
@@ -348,6 +562,13 @@ function ChatFlow({ intervenant, clients }) {
 
   async function repondreChoix(reponse) {
     addUser(reponse.libelle);
+    // Si c'est la première question (motif), on met à jour l'intervention avec le vrai motif
+    if (currentQuestion.code === "VMC_ENTREE_MOTIF") {
+      await api(`/interventions/${intervention.id}`, {
+        method: "PATCH",
+        body: { motif: reponse.valeur },
+      }).catch(() => {}); // silent fail si endpoint pas encore déployé
+    }
     const result = await api(`/interventions/${intervention.id}/reponses`, {
       method: "POST",
       body: { questionId: currentQuestion.id, valeur: reponse.valeur, reponsePossibleId: reponse.id },
