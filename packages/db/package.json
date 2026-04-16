@@ -1,0 +1,21 @@
+{
+  "name": "@vmc/db",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./src/index.js",
+  "scripts": {
+    "generate": "prisma generate",
+    "push": "prisma db push",
+    "seed": "node src/seed.js",
+    "studio": "prisma studio"
+  },
+  "prisma": {
+    "seed": "node src/seed.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.22.0"
+  }
+}

@@ -1,0 +1,186 @@
+// Prisma schema — VMC Chatbot
+// Based on the ERD documented in chatbot_vmc_cartographie.docx
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── ARBRE DE DECISION (statique) ─────────────────────────────
+
+enum TypeReponse {
+  CHOIX_UNIQUE
+  CHOIX_MULTIPLE
+  TEXTE_LIBRE
+  NUMERIQUE
+  PHOTO
+  MESURE
+  SIGNATURE
+}
+
+enum ContexteMetier {
+  VMC
+  CHAUDIERE
+  PLOMBERIE
+  CLIMATISATION
+}
+
+enum TypeCapture {
+  PHOTO
+  MESURE
+  PIECE
+  TEMPS
+  SIGNATURE
+  AUDIO
+}
+
+enum ActionSuivante {
+  QUESTION_SUIVANTE
+  CLOTURE
+  ESCALADE
+  REDIRIGER_BRANCHE
+}
+
+enum MotifIntervention {
+  ENTRETIEN
+  DEPANNAGE
+  REMPLACEMENT
+  INSTALLATION
+}
+
+enum StatutIntervention {
+  EN_COURS
+  TERMINEE
+  ANNULEE
+  ESCALADEE
+}
+
+model Question {
+  id                 Int             @id @default(autoincrement())
+  code               String          @unique // ex: "VMC_DEP_SYMPT"
+  libelle            String
+  typeReponse        TypeReponse
+  contexteMetier     ContexteMetier
+  ordre              Int             @default(0)
+  captureObligatoire TypeCapture?    // optionnel — si présent, capture forcée
+  uniteAttendue      String?         // ex: "m³/h" pour numérique
+  aideTexte          String?         // texte d'aide affiché à l'intervenant
+
+  // Relations
+  reponsesPossibles  ReponsePossible[]   @relation("QuestionVersReponses")
+  reponsesPointant   ReponsePossible[]   @relation("ReponsesVersQuestion")
+  reponsesDonnees    ReponseDonnee[]
+  captures           Capture[]
+
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  @@map("question")
+}
+
+model ReponsePossible {
+  id                  Int              @id @default(autoincrement())
+  questionId          Int
+  valeur              String           // valeur stockée (ex: "ne_fonctionne_plus")
+  libelle             String           // libellé affiché
+  ordre               Int              @default(0)
+  questionSuivanteId  Int?             // null si action terminale
+  actionSuivante      ActionSuivante   @default(QUESTION_SUIVANTE)
+
+  question            Question         @relation("QuestionVersReponses", fields: [questionId], references: [id], onDelete: Cascade)
+  questionSuivante    Question?        @relation("ReponsesVersQuestion", fields: [questionSuivanteId], references: [id])
+
+  @@map("reponse_possible")
+}
+
+// ─── REFERENTIELS ─────────────────────────────────────────────
+
+model Intervenant {
+  id            Int             @id @default(autoincrement())
+  nom           String
+  prenom        String
+  specialite    String          @default("VMC")
+  actif         Boolean         @default(true)
+  interventions Intervention[]
+
+  @@map("intervenant")
+}
+
+model Client {
+  id                Int            @id @default(autoincrement())
+  nom               String
+  adressePrincipale String
+  type              String         @default("particulier") // particulier | professionnel
+  interventions     Intervention[]
+
+  @@map("client")
+}
+
+// ─── INTERVENTION (dynamique) ─────────────────────────────────
+
+model Intervention {
+  id                  Int                 @id @default(autoincrement())
+  dateCreation        DateTime            @default(now())
+  dateCloture         DateTime?
+  intervenantId       Int
+  clientId            Int
+  adresseSite         String              // peut différer de l'adresse principale du client
+  motif               MotifIntervention
+  statut              StatutIntervention  @default(EN_COURS)
+  dureeMinutes        Int?
+  signatureClientUrl  String?
+  remarquesInternes   String?
+
+  intervenant         Intervenant         @relation(fields: [intervenantId], references: [id])
+  client              Client              @relation(fields: [clientId], references: [id])
+  reponses            ReponseDonnee[]
+  captures            Capture[]
+  pieces              PieceUtilisee[]
+
+  @@map("intervention")
+}
+
+model ReponseDonnee {
+  id              Int           @id @default(autoincrement())
+  interventionId  Int
+  questionId      Int
+  valeur          String        // string ou JSON sérialisé selon type
+  timestamp       DateTime      @default(now())
+
+  intervention    Intervention  @relation(fields: [interventionId], references: [id], onDelete: Cascade)
+  question        Question      @relation(fields: [questionId], references: [id])
+
+  @@map("reponse_donnee")
+}
+
+model Capture {
+  id              Int           @id @default(autoincrement())
+  interventionId  Int
+  questionId      Int?          // null si capture libre (ex: signature finale)
+  type            TypeCapture
+  valeur          String        // URL pour photo, valeur numérique pour mesure
+  unite           String?       // ex: "m³/h"
+  timestamp       DateTime      @default(now())
+
+  intervention    Intervention  @relation(fields: [interventionId], references: [id], onDelete: Cascade)
+  question        Question?     @relation(fields: [questionId], references: [id])
+
+  @@map("capture")
+}
+
+model PieceUtilisee {
+  id               Int           @id @default(autoincrement())
+  interventionId   Int
+  refArticle       String        // référence Mercator (en phase 2)
+  description      String
+  quantite         Float         @default(1)
+  prixUnitaireHT   Float?        // optionnel, alimenté par Mercator en phase 2
+
+  intervention     Intervention  @relation(fields: [interventionId], references: [id], onDelete: Cascade)
+
+  @@map("piece_utilisee")
+}
