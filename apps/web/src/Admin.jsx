@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 
-const API = import.meta.env.VITE_API_URL || "/api";
+// const API = import.meta.env.VITE_API_URL || "/api";
+const API = window.location.hostname === "localhost"
+  ? "/api"
+  : "https://vmc-chatbot-api.onrender.com";
 const MANAGER_CODE = "marques2026"; // mot de passe simple pour le POC
 
 async function api(path, opts = {}) {
