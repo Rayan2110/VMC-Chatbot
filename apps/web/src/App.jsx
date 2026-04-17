@@ -1,9 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
-// const API = "/api";
-const API = window.location.hostname === "localhost" 
-  ? "/api" 
-  : "https://vmc-chatbot-api.onrender.com";
+const API = "/api";
 
 async function api(path, opts = {}) {
   const r = await fetch(`${API}${path}`, {
@@ -409,12 +406,31 @@ export default function App() {
   const [clients, setClients] = useState([]);
   const [intervenantId, setIntervenantId] = useState(null);
 
+  const [loadError, setLoadError] = useState(false);
+
   useEffect(() => {
-    api("/intervenants").then(setIntervenants);
-    api("/clients").then(setClients);
+    api("/intervenants").then(setIntervenants).catch(() => setLoadError(true));
+    api("/clients").then(setClients).catch(() => setLoadError(true));
   }, []);
 
-  if (!intervenants.length) return <div className="loading">Chargement…</div>;
+  if (!intervenants.length) return (
+    <div className="loading-screen">
+      <div className="loading-avatar">VM</div>
+      {loadError ? (
+        <>
+          <div className="loading-title">Connexion impossible</div>
+          <div className="loading-sub">Le serveur ne répond pas. Il est peut-être en train de se réveiller (30-50 sec sur le plan gratuit).</div>
+          <button className="loading-retry" onClick={() => window.location.reload()}>🔄 Réessayer</button>
+        </>
+      ) : (
+        <>
+          <div className="loading-title">VMC Assistant</div>
+          <div className="loading-sub">Connexion au serveur en cours…</div>
+          <div className="loading-dots"><span></span><span></span><span></span></div>
+        </>
+      )}
+    </div>
+  );
 
   const intervenantActif = intervenants.find((i) => i.id === intervenantId);
 
@@ -481,7 +497,7 @@ function ChatFlow({ intervenant, clients }) {
     // Garde contre le double-mount de React StrictMode en dev
     if (welcomedRef.current) return;
     welcomedRef.current = true;
-    addBot(`Bonjour ${intervenant.prenom} 👋 On va démarrer une nouvelle intervention.`);
+    addBot(`Bonjour ${intervenant.prenom} 👋 Prêt pour une nouvelle intervention.`);
     setTimeout(() => addBot("Pour quel client ?"), 400);
   }, []);
 
@@ -490,10 +506,21 @@ function ChatFlow({ intervenant, clients }) {
   }, [messages]);
 
   function addBot(content, opts = {}) {
-    setMessages((m) => [...m, { id: Date.now() + Math.random(), side: "bot", content, ...opts }]);
+    const ts = new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+    // Affiche d'abord l'indicateur de saisie puis le vrai message
+    const typingId = Date.now() + Math.random();
+    setMessages((m) => [...m, { id: typingId, side: "bot", typing: true }]);
+    setTimeout(() => {
+      setMessages((m) =>
+        m.map((msg) =>
+          msg.id === typingId ? { ...msg, typing: false, content, time: ts, ...opts } : msg
+        )
+      );
+    }, 600 + Math.random() * 400); // délai réaliste 600-1000ms
   }
   function addUser(content, opts = {}) {
-    setMessages((m) => [...m, { id: Date.now() + Math.random(), side: "user", content, ...opts }]);
+    const ts = new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+    setMessages((m) => [...m, { id: Date.now() + Math.random(), side: "user", content, time: ts, ...opts }]);
   }
 
   // ─── Client ────────────────────────────────────────────────
@@ -519,6 +546,7 @@ function ChatFlow({ intervenant, clients }) {
   }
 
   async function startParcours(adresseFinale = adresse) {
+    try {
     const firstQ = await api("/questions/first");
     const interv = await api("/interventions", {
       method: "POST",
@@ -534,6 +562,9 @@ function ChatFlow({ intervenant, clients }) {
       afficheQuestion(firstQ);
       setPhase("parcours");
     }, 500);
+    } catch (err) {
+      addBot("\u274c Erreur de connexion au serveur. V\u00e9rifiez votre connexion internet. Si le probl\u00e8me persiste, le serveur est peut-\u00eatre en cours de r\u00e9veil (30-50 sec).");
+    }
   }
 
   function afficheQuestion(q) {
@@ -556,7 +587,7 @@ function ChatFlow({ intervenant, clients }) {
   function validerRecapEtSigner() {
     // Sortir de la phase recap pour afficher la question signature normalement
     setPhase("parcours");
-    addBot("Récap validé. Dernière étape : signature du client.");
+    addBot("Récapitulatif validé ✓ Dernière étape : recueillez la signature du client sur la tablette.");
     addBot(currentQuestion.libelle, {
       aideTexte: currentQuestion.aideTexte,
       captureObligatoire: currentQuestion.captureObligatoire,
@@ -565,6 +596,7 @@ function ChatFlow({ intervenant, clients }) {
 
   async function repondreChoix(reponse) {
     addUser(reponse.libelle);
+    try {
     // Si c'est la première question (motif), on met à jour l'intervention avec le vrai motif
     if (currentQuestion.code === "VMC_ENTREE_MOTIF") {
       await api(`/interventions/${intervention.id}`, {
@@ -577,6 +609,9 @@ function ChatFlow({ intervenant, clients }) {
       body: { questionId: currentQuestion.id, valeur: reponse.valeur, reponsePossibleId: reponse.id },
     });
     gereSuite(result);
+    } catch (err) {
+      addBot("\u274c Probl\u00e8me de connexion. Votre r\u00e9ponse n'a pas \u00e9t\u00e9 enregistr\u00e9e. V\u00e9rifiez le r\u00e9seau et r\u00e9essayez.");
+    }
   }
 
   async function repondreNumerique(valeur) {
@@ -626,7 +661,33 @@ function ChatFlow({ intervenant, clients }) {
       body: { questionId: currentQuestion.id, type: "PHOTO", valeur: dataUrl },
     });
     setCaptureFaite(true);
-    setTimeout(() => addBot("Photo reçue ✓ Vous pouvez répondre à la question maintenant."), 300);
+
+    // Analyse IA de la photo (si le service est disponible)
+    try {
+      addBot("📸 Photo enregistrée. Analyse IA en cours…");
+      const result = await api("/analyze-photo", {
+        method: "POST",
+        body: {
+          image: dataUrl,
+          questionContext: currentQuestion.libelle,
+          aideTexte: currentQuestion.aideTexte,
+        },
+      });
+      if (result.analysis) {
+        addBot(result.analysis, { isAiAnalysis: true });
+        // Si Claude recommande de reprendre la photo, proposer le bouton
+        const texteLC = result.analysis.toLowerCase();
+        if (texteLC.includes("reprendre") || texteLC.includes("floue") || texteLC.includes("nette") || texteLC.includes("illisible") || texteLC.includes("mal cadr")) {
+          setActionsContextuelles([
+            { label: "📸 Reprendre la photo", onClick: () => { setActionsContextuelles(null); setCaptureFaite(false); } },
+            { label: "✓ Photo suffisante, continuer", onClick: () => setActionsContextuelles(null) },
+          ]);
+        }
+      }
+    } catch (err) {
+      // IA non dispo → on continue normalement, la photo est enregistrée
+      addBot("Photo enregistrée ✓ Vous pouvez répondre à la question.");
+    }
   }
 
   // ─── Commentaire libre (tapé dans la barre) ───────────────
@@ -651,88 +712,99 @@ function ChatFlow({ intervenant, clients }) {
 
     switch (intention) {
       case "URGENCE":
-        addBot("🚨 Attention, votre commentaire signale une urgence ou un risque sécurité. Je recommande :");
-        addBot("• Couper l'alimentation électrique et gaz si applicable\n• Mettre la zone en sécurité\n• Contacter immédiatement le manager avant de poursuivre");
+        addBot("🚨 ALERTE SÉCURITÉ DÉTECTÉE — Votre commentaire signale un risque potentiel. Actions immédiates recommandées :");
+        addBot("1️⃣ Couper l'alimentation électrique au disjoncteur dédié VMC\n2️⃣ Si odeur de gaz : ne pas actionner d'interrupteur, aérer et évacuer\n3️⃣ Mettre la zone en sécurité (balisage si nécessaire)\n4️⃣ Contacter le manager AVANT de poursuivre toute manipulation");
         actions = [
-          { label: "🚨 Escalader immédiatement", onClick: () => escaladerIntervention("Urgence sécurité signalée") },
-          { label: "📸 Prendre photo de la zone", onClick: () => forcerPhoto() },
-          { label: "↩ Continuer le parcours", onClick: () => clearActions() },
+          { label: "🚨 Escalader immédiatement", onClick: () => escaladerIntervention("Urgence sécurité signalée par l'intervenant") },
+          { label: "📸 Documenter la zone (photo)", onClick: () => forcerPhoto() },
+          { label: "↩ Fausse alerte, continuer", onClick: () => clearActions() },
         ];
         break;
 
       case "ESCALADE":
-        addBot("⚠️ Situation à remonter au manager. Que souhaitez-vous faire ?");
+        addBot("⚠️ Situation nécessitant un avis supérieur. Avant d'escalader, pensez à documenter :");
+        addBot("• La raison précise de l'escalade (technique ? relationnelle ? contractuelle ?)\n• Ce que vous avez déjà tenté\n• Les photos/mesures qui appuient votre constat\nCela aidera le manager à prendre une décision rapide.");
         actions = [
           { label: "📢 Escalader maintenant", onClick: () => escaladerIntervention("Escalade demandée par l'intervenant") },
-          { label: "📝 Noter et continuer", onClick: () => clearActions() },
+          { label: "📝 Documenter d'abord puis escalader", onClick: () => demanderDetails("Décrivez la situation en détail pour le manager") },
+          { label: "↩ Finalement non, continuer", onClick: () => clearActions() },
         ];
         break;
 
       case "SUITES":
-        addBot("📌 Noté, cette intervention a des suites à donner. Pensez à préciser le reste à faire et l'échéance.");
+        addBot("📌 Intervention avec suites à donner. Points importants à ne pas oublier :");
+        addBot("• Préciser exactement ce qui reste à faire (pièce à commander, action à planifier)\n• Estimer le délai nécessaire avant le retour\n• Informer le client du planning prévu\n• Vérifier si le matériel nécessaire est disponible au dépôt");
         actions = [
-          { label: "📅 Planifier un retour", onClick: () => demanderDetails("Détaillez la date/semaine du retour prévu") },
-          { label: "📝 Noter le reste à faire", onClick: () => demanderDetails("Détaillez ce qui reste à faire") },
+          { label: "📅 Planifier un retour", onClick: () => demanderDetails("Indiquez la date ou semaine du retour prévu, et ce qui motive ce délai") },
+          { label: "📝 Lister le reste à faire", onClick: () => demanderDetails("Détaillez précisément ce qui reste à faire lors du prochain passage") },
           { label: "↩ Continuer le parcours", onClick: () => clearActions() },
         ];
         break;
 
       case "PIECE":
-        addBot("🔧 Pièce ou matériel à prévoir. Quelle action ?");
+        addBot("🔧 Pièce ou matériel à prévoir. Pour faciliter la commande, notez :");
+        addBot("• La référence exacte (gravée sur la pièce ou sur la plaque signalétique du caisson)\n• La marque et le modèle de la VMC (important pour la compatibilité)\n• La quantité nécessaire\n• L'urgence : le client peut-il attendre 48h ou faut-il dépanner en provisoire ?");
         actions = [
-          { label: "📝 Noter la référence", onClick: () => demanderDetails("Indiquez référence, quantité et délai") },
-          { label: "📞 Vérifier stock Fetz", onClick: () => demanderDetails("Notez la demande de vérif stock au dépôt Fetz") },
+          { label: "📝 Noter la référence complète", onClick: () => demanderDetails("Indiquez : marque VMC, référence pièce, quantité, délai souhaité") },
+          { label: "📞 Vérifier disponibilité au dépôt", onClick: () => demanderDetails("Notez la demande de vérification stock au dépôt Fetz : quelle pièce, quelle quantité ?") },
           { label: "↩ Continuer", onClick: () => clearActions() },
         ];
         break;
 
       case "RDV":
-        addBot("📅 Un rendez-vous ultérieur est mentionné. Pensez à le caler avec le client et à me donner la date en clôture.");
+        addBot("📅 Rendez-vous à prévoir. Quelques points à vérifier :");
+        addBot("• Le client est-il disponible à la date proposée ?\n• Le matériel nécessaire sera-t-il livré d'ici là ?\n• Faut-il prévoir un créneau long (remplacement) ou court (vérification) ?\n• Pensez à confirmer le RDV par SMS ou appel 24h avant");
         actions = [
-          { label: "📆 Détailler le RDV proposé", onClick: () => demanderDetails("Indiquez la date et l'horaire du RDV proposé") },
+          { label: "📆 Détailler le RDV", onClick: () => demanderDetails("Indiquez la date, l'horaire et la durée estimée du prochain passage") },
           { label: "↩ Continuer", onClick: () => clearActions() },
         ];
         break;
 
       case "CLIENT_ABSENT":
-        addBot("👤 Client non disponible sur place. Que faites-vous ?");
+        addBot("👤 Client absent du domicile. Options possibles :");
+        addBot("• Si l'accès technique est possible (clé sous le paillasson, gardien) : poursuivre l'intervention\n• Si l'accès est impossible : prendre une photo de la porte fermée et reprogrammer\n• Pensez à appeler le client pour confirmer son absence et convenir d'un nouveau créneau");
         actions = [
-          { label: "▶ Poursuivre l'intervention", onClick: () => clearActions() },
-          { label: "🔄 Reprogrammer la visite", onClick: () => escaladerIntervention("Client absent - reprogrammation requise") },
+          { label: "▶ Accès OK, je poursuis", onClick: () => clearActions() },
+          { label: "📞 Appeler le client", onClick: () => { clearActions(); addBot("Essayez de joindre le client. S'il ne répond pas, escaladez pour reprogrammer."); } },
+          { label: "🔄 Reprogrammer la visite", onClick: () => escaladerIntervention("Client absent — reprogrammation nécessaire") },
         ];
         break;
 
       case "ACCES":
-        addBot("🚪 Problème d'accès signalé. Quelle suite donner ?");
+        addBot("🚪 Problème d'accès signalé. Causes fréquentes et solutions :");
+        addBot("• Trappe de visite condamnée → demander au propriétaire de la libérer\n• Combles encombrés → signaler au client, hors périmètre intervenant\n• Digicode/interphone en panne → contacter le syndic ou le gardien\n• Caisson encastré dans un faux-plafond → prévoir outillage adapté au prochain passage");
         actions = [
-          { label: "📝 Noter la cause", onClick: () => demanderDetails("Détaillez la cause (trappe condamnée, clé manquante...)") },
-          { label: "📞 Contacter syndic/gardien", onClick: () => demanderDetails("Notez la démarche à faire auprès du syndic ou gardien") },
-          { label: "🔄 Reprogrammer", onClick: () => escaladerIntervention("Accès impossible - reprogrammation") },
+          { label: "📝 Documenter l'obstacle", onClick: () => demanderDetails("Décrivez l'obstacle d'accès et ce qui serait nécessaire pour le lever") },
+          { label: "📞 Contacter syndic/gardien", onClick: () => demanderDetails("Notez les coordonnées du syndic/gardien et la demande à formuler") },
+          { label: "🔄 Reprogrammer", onClick: () => escaladerIntervention("Accès impossible — reprogrammation nécessaire") },
         ];
         break;
 
       case "DIAGNOSTIC":
-        addBot("🔍 Diagnostic technique en cours. Continuez à documenter les constats, photos et mesures au fur et à mesure.");
+        addBot("🔍 Phase de diagnostic en cours. Conseils pour un diagnostic efficace :");
+        addBot("• Procédez par élimination : alimentation → moteur → gaines → bouches\n• Prenez une photo à chaque étape (avant/après)\n• Notez les valeurs mesurées même si elles semblent normales\n• Comparez avec les valeurs de référence sur la plaque signalétique du caisson");
         actions = [
-          { label: "📸 Ajouter une photo", onClick: () => forcerPhoto() },
+          { label: "📸 Ajouter une photo de constat", onClick: () => forcerPhoto() },
+          { label: "📏 Noter une mesure", onClick: () => demanderDetails("Indiquez la mesure relevée, sa valeur et l'endroit du relevé") },
           { label: "↩ Continuer", onClick: () => clearActions() },
         ];
         break;
 
       case "DEVIS":
-        addBot("💶 Devis mentionné. Pensez à détailler les travaux à chiffrer.");
+        addBot("💶 Devis à établir. Pour que le chiffrage soit précis, pensez à noter :");
+        addBot("• Les travaux exacts à réaliser (remplacement moteur, reprise de gaines, ajout de bouches...)\n• Le matériel nécessaire avec références\n• La main d'œuvre estimée (nombre d'heures, nombre d'intervenants)\n• Si le client a exprimé un budget ou une urgence particulière");
         actions = [
-          { label: "📝 Détailler les travaux", onClick: () => demanderDetails("Listez les travaux à chiffrer dans le devis") },
+          { label: "📝 Détailler les travaux", onClick: () => demanderDetails("Listez les travaux à chiffrer : matériel + main d'œuvre + délai estimé") },
           { label: "↩ Continuer", onClick: () => clearActions() },
         ];
         break;
 
       case "POSITIF":
-        addBot("👍 Noté. Continuez l'intervention quand vous êtes prêt.");
+        addBot("👍 Parfait, RAS. Continuez quand vous êtes prêt.");
         break;
 
       default:
-        addBot("✓ Commentaire enregistré avec l'intervention. Vous pouvez continuer.");
+        addBot("✓ Noté. Votre commentaire est enregistré avec l'intervention.");
     }
 
     setActionsContextuelles(actions);
@@ -740,7 +812,6 @@ function ChatFlow({ intervenant, clients }) {
 
   function clearActions() {
     setActionsContextuelles(null);
-    addBot("Reprenons le parcours.");
   }
 
   function demanderDetails(prompt) {
@@ -765,9 +836,9 @@ function ChatFlow({ intervenant, clients }) {
           valeur: `[ESCALADE] ${motif}`,
         },
       });
-      await fetch(`/api/interventions/${intervention.id}/escalader`, { method: "POST" }).catch(() => {});
+      // Escalade enregistrée via la réponse [ESCALADE] ci-dessus
     }
-    addBot(`⚠️ Intervention escaladée au manager. Motif : "${motif}". Notification envoyée.`);
+    addBot(`⚠️ Intervention escaladée au manager.\nMotif : "${motif}"\nLes données collectées jusqu'ici sont enregistrées et accessibles dans le suivi.`);
     setPhase("termine");
   }
 
@@ -775,15 +846,31 @@ function ChatFlow({ intervenant, clients }) {
     setTimeout(() => {
       if (result.done) {
         if (result.action === "CLOTURE") {
-          addBot("✅ Intervention clôturée. Merci, toutes les données ont été enregistrées.");
+          addBot("✅ Intervention terminée ! Toutes vos réponses, photos et mesures ont été enregistrées. Le récapitulatif est accessible dans le suivi. Merci et bonne continuation 👍");
+          setPhase("termine");
         } else if (result.action === "ESCALADE") {
-          addBot("⚠️ Cette intervention nécessite une remontée manager. Notification envoyée.");
+          addBot("⚠️ Le diagnostic indique qu'une remontée manager est nécessaire. Confirmez-vous l'escalade ?");
+          setActionsContextuelles([
+            { label: "⚠️ Oui, escalader au manager", onClick: () => confirmerEscalade() },
+            { label: "↩ Non, je gère sur place", onClick: () => { clearActions(); addBot("Compris. Ajoutez un commentaire pour expliquer votre solution, puis vous pourrez passer à la signature."); } },
+          ]);
         }
-        setPhase("termine");
       } else {
         afficheQuestion(result.question);
       }
     }, 500);
+  }
+
+  async function confirmerEscalade() {
+    setActionsContextuelles(null);
+    if (intervention) {
+      await api(`/interventions/${intervention.id}/reponses`, {
+        method: "POST",
+        body: { questionId: currentQuestion?.id || 0, valeur: "[ESCALADE] Confirmée par l'intervenant suite au diagnostic" },
+      }).catch(() => {});
+    }
+    addBot("⚠️ Intervention escaladée au manager. Notification envoyée. Toutes les données collectées sont enregistrées et accessibles dans le suivi.");
+    setPhase("termine");
   }
 
   function reset() {
@@ -795,7 +882,7 @@ function ChatFlow({ intervenant, clients }) {
     setPhase("setup");
     setCaptureFaite(false);
     setTimeout(() => {
-      addBot(`Bonjour ${intervenant.prenom} 👋 On démarre une nouvelle intervention.`);
+      addBot(`Bonjour ${intervenant.prenom} 👋 Prêt pour une nouvelle intervention.`);
       setTimeout(() => addBot("Pour quel client ?"), 400);
     }, 100);
   }
@@ -810,7 +897,7 @@ function ChatFlow({ intervenant, clients }) {
           onValider={validerRecapEtSigner}
           onRetour={() => {
             setPhase("parcours");
-            addBot("Vous revenez au parcours. Cliquez ci-dessous pour passer à la signature quand vous êtes prêt.");
+            addBot("Retour au fil de discussion. Quand vous êtes prêt, passez à la signature du client.");
           }}
         />
       ) : (
@@ -859,11 +946,22 @@ function ChatFlow({ intervenant, clients }) {
 }
 
 // ═══ BULLE ═════════════════════════════════════════════════════
-function Bubble({ side, children, captureObligatoire, aideTexte, photoUrl, signatureUrl }) {
+function Bubble({ side, children, captureObligatoire, aideTexte, photoUrl, signatureUrl, typing, time, isAiAnalysis }) {
+  if (typing) {
+    return (
+      <div className={`bubble-row bot`}>
+        <div className="bubble-avatar">VM</div>
+        <div className="bubble bot">
+          <div className="typing-indicator"><span></span><span></span><span></span></div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className={`bubble-row ${side}`}>
-      {side === "bot" && <div className="bubble-avatar">VM</div>}
-      <div className={`bubble ${side}`}>
+      {side === "bot" && <div className="bubble-avatar">{isAiAnalysis ? "🤖" : "VM"}</div>}
+      <div className={`bubble ${side} ${isAiAnalysis ? "ai-analysis" : ""}`}>
+        {isAiAnalysis && <div className="ai-analysis-header">🤖 Analyse IA</div>}
         {children && <div className="bubble-text">{children}</div>}
         {aideTexte && <div className="bubble-help">💡 {aideTexte}</div>}
         {captureObligatoire && (
@@ -873,6 +971,7 @@ function Bubble({ side, children, captureObligatoire, aideTexte, photoUrl, signa
         )}
         {photoUrl && <img src={photoUrl} alt="capture" className="bubble-photo" />}
         {signatureUrl && <img src={signatureUrl} alt="signature" className="bubble-signature" />}
+        {time && <div className="bubble-time">{time}</div>}
       </div>
     </div>
   );

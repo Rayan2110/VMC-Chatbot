@@ -231,6 +231,76 @@ app.post("/interventions/:id/captures", async (req, res) => {
   res.status(201).json(capture);
 });
 
+// ─── Analyse photo par IA (Claude API) ─────────────────────────
+app.post("/analyze-photo", async (req, res) => {
+  const { image, questionContext, aideTexte } = req.body;
+  if (!image) return res.status(400).json({ error: "image (base64) requise" });
+
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: "Clé API Anthropic non configurée" });
+
+  try {
+    // Extraire le type MIME et les données base64
+    const match = image.match(/^data:(image\/\w+);base64,(.+)$/);
+    if (!match) return res.status(400).json({ error: "Format image invalide" });
+
+    const mediaType = match[1];
+    const base64Data = match[2];
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 500,
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "image",
+                source: { type: "base64", media_type: mediaType, data: base64Data },
+              },
+              {
+                type: "text",
+                text: `Tu es un assistant technique spécialisé en VMC (Ventilation Mécanique Contrôlée) pour une entreprise de génie climatique au Luxembourg. Un intervenant terrain vient de prendre cette photo pendant une intervention.
+
+Contexte de la question en cours : "${questionContext || "Diagnostic VMC"}"
+${aideTexte ? `Aide technique associée : "${aideTexte}"` : ""}
+
+Analyse cette photo en 2-3 phrases maximum. Sois concret et technique :
+- Décris ce que tu vois de pertinent pour le diagnostic
+- Si tu détectes un problème visible, signale-le clairement
+- Si tu peux lire des informations (références, valeurs, marques), indique-les
+- Si la photo est floue ou mal cadrée, dis-le pour que l'intervenant la reprenne
+
+Réponds en français, de manière directe et professionnelle.`,
+              },
+            ],
+          },
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error("Erreur Claude API:", response.status, errText);
+      return res.status(500).json({ error: "Erreur lors de l'analyse IA" });
+    }
+
+    const data = await response.json();
+    const analysisText = data.content?.[0]?.text || "Analyse non disponible.";
+    res.json({ analysis: analysisText });
+  } catch (err) {
+    console.error("Erreur analyse photo:", err.message);
+    res.status(500).json({ error: "Erreur de connexion au service IA" });
+  }
+});
+
 // ─── Démarrage ──────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`🚀 API VMC en écoute sur http://localhost:${PORT}`);

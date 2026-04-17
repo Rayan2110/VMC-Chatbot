@@ -87,14 +87,14 @@ async function main() {
   // SOUS-ARBRE 1 : DÉPANNAGE — Ne fonctionne plus
   // ═══════════════════════════════════════════════════════════════════
   await makeQuestion("VMC_DEP_NF_ALIM", "L'alimentation électrique est-elle présente ?", "CHOIX_UNIQUE",
-    { ordre: 30, captureObligatoire: "PHOTO", aideTexte: "Photo du tableau électrique avant intervention" });
+    { ordre: 30, captureObligatoire: "PHOTO", aideTexte: "Photographier le tableau électrique. Vérifier : présence de tension au testeur, position du disjoncteur dédié VMC (souvent 2A ou 6A), traces de chauffe ou noircissement" });
   await makeQuestion("VMC_DEP_NF_DISJ", "Le disjoncteur dédié est-il enclenché (non déclenché) ?", "CHOIX_UNIQUE",
-    { ordre: 31, captureObligatoire: "PHOTO", aideTexte: "Photo du disjoncteur dédié VMC" });
+    { ordre: 31, captureObligatoire: "PHOTO", aideTexte: "Le disjoncteur dédié VMC est généralement un 2A en tête de rangée. S'il a déclenché : le réarmer et observer s'il retient. S'il redisjoncte immédiatement → court-circuit probable dans le moteur ou le câblage" });
   await makeQuestion("VMC_DEP_NF_TURBINE", "La mototurbine tourne-t-elle quand on la lance manuellement ?", "CHOIX_UNIQUE",
-    { ordre: 32, captureObligatoire: "PHOTO", aideTexte: "Démonter conduits, lancer turbine à la main, photo du moteur" });
+    { ordre: 32, captureObligatoire: "PHOTO", aideTexte: "Couper le courant avant manipulation. Démonter les conduits du caisson. Lancer la turbine à la main : elle doit tourner librement sans point dur. Si elle accroche ou grince → roulements HS. Photographier l'état du moteur et de l'axe" });
   await makeQuestion("VMC_DEP_NF_CONDO", "Capacité du condensateur de démarrage (µF mesurés au testeur)", "NUMERIQUE",
     { ordre: 33, captureObligatoire: "MESURE", uniteAttendue: "µF",
-      aideTexte: "Tester avec un capacimètre, valeur nominale gravée sur le condensateur" });
+      aideTexte: "Débrancher le condensateur avant mesure. La valeur nominale est gravée sur le boîtier (ex: 4µF ±5%). Tolérance acceptable : ±10% de la valeur nominale. En dessous → le moteur peine à démarrer ou ne démarre plus. Condensateur typique VMC : 2 à 8 µF selon modèle" });
   await makeQuestion("VMC_DEP_NF_DEBIT_FINAL", "Mesure de débit après remise en service", "NUMERIQUE",
     { ordre: 34, captureObligatoire: "MESURE", uniteAttendue: "m³/h",
       aideTexte: "Anémomètre à la bouche de SDB. Conforme si ≥ 30 m³/h" });
@@ -116,13 +116,13 @@ async function main() {
   // ═══════════════════════════════════════════════════════════════════
   await makeQuestion("VMC_DEP_DEBIT_MESURE_INIT", "Mesure débit à la bouche principale (avant intervention)", "NUMERIQUE",
     { ordre: 50, captureObligatoire: "MESURE", uniteAttendue: "m³/h",
-      aideTexte: "Anémomètre. Conforme si SDB ≥ 30, WC ≥ 15 m³/h" });
+      aideTexte: "Placer l'anémomètre bien centré sur la bouche d'extraction. Attendre 10 secondes de stabilisation avant lecture. Normes arrêté du 24/03/1982 : SDB ≥ 30 m³/h, WC ≥ 15 m³/h, cuisine ≥ 45 m³/h (ouverte). Si bouche hygroréglable : mesurer en mode manuel forcé" });
   await makeQuestion("VMC_DEP_DEBIT_BOUCHES", "Les bouches d'extraction sont-elles propres ?", "CHOIX_UNIQUE",
-    { ordre: 51, captureObligatoire: "PHOTO", aideTexte: "Photo avant nettoyage éventuel" });
+    { ordre: 51, captureObligatoire: "PHOTO", aideTexte: "Photographier chaque bouche AVANT nettoyage (preuve d'encrassement). Nettoyer à l'eau tiède savonneuse pour les bouches autoréglables. ATTENTION : ne PAS mouiller les bouches hygroréglables (la bandelette hygrosensible serait détruite). Les sécher à l'air ou les essuyer délicatement" });
   await makeQuestion("VMC_DEP_DEBIT_FILTRES", "État des filtres (double flux uniquement) ?", "CHOIX_UNIQUE",
-    { ordre: 52, captureObligatoire: "PHOTO", aideTexte: "G3/G4 extraction, F7 insufflation" });
+    { ordre: 52, captureObligatoire: "PHOTO", aideTexte: "Double flux uniquement. Filtres extraction : G3 ou G4 (gris, côté air vicié). Filtres insufflation : F7 (blanc, côté air neuf). Changer si visiblement gris/noir ou si > 6 mois d'utilisation. Noter la référence pour commande : format + dimensions (ex: 300x200 G4)" });
   await makeQuestion("VMC_DEP_DEBIT_GAINES", "Gaines obstruées ou percées ?", "CHOIX_UNIQUE",
-    { ordre: 53, captureObligatoire: "PHOTO", aideTexte: "Inspection visuelle des gaines accessibles" });
+    { ordre: 53, captureObligatoire: "PHOTO", aideTexte: "Inspecter les gaines accessibles dans les combles, faux-plafonds et placards. Vérifier : pas d'écrasement, pas de coude à 90° trop serré (perte de charge), pas de déconnexion aux jonctions, pas de perforation. Les gaines souples doivent être tendues, pas affaissées" });
   await makeQuestion("VMC_DEP_DEBIT_MESURE_FIN", "Mesure débit après intervention (vérification finale)", "NUMERIQUE",
     { ordre: 54, captureObligatoire: "MESURE", uniteAttendue: "m³/h",
       aideTexte: "Remesure pour confirmer le rétablissement du débit" });
@@ -131,22 +131,22 @@ async function main() {
   // SOUS-ARBRE 4 : DÉPANNAGE — Humidité persistante
   // ═══════════════════════════════════════════════════════════════════
   await makeQuestion("VMC_DEP_HUM_FLUX", "Sens du flux correct (test fumée ou papier) ?", "CHOIX_UNIQUE",
-    { ordre: 60, captureObligatoire: "PHOTO", aideTexte: "Approcher une fumée d'encens près de la bouche, elle doit être aspirée" });
+    { ordre: 60, captureObligatoire: "PHOTO", aideTexte: "Test fumée : allumer un bâton d'encens ou une cigarette et l'approcher à 5 cm de la bouche d'extraction. La fumée doit être aspirée vers la bouche. Si elle est repoussée → flux inversé (câblage moteur inversé ou entrée d'air extérieur par le caisson). Si elle stagne → débit nul" });
   await makeQuestion("VMC_DEP_HUM_DEBIT", "Mesure débit aux bouches humides (SDB, cuisine)", "NUMERIQUE",
     { ordre: 61, captureObligatoire: "MESURE", uniteAttendue: "m³/h",
       aideTexte: "Conforme si SDB ≥ 30 m³/h, cuisine selon norme" });
   await makeQuestion("VMC_DEP_HUM_GAINES", "Condensation dans les gaines (combles non isolés) ?", "CHOIX_UNIQUE",
-    { ordre: 62, captureObligatoire: "PHOTO", aideTexte: "Inspection des gaines dans les combles" });
+    { ordre: 62, captureObligatoire: "PHOTO", aideTexte: "Dans les combles non isolés, les gaines subissent de fortes variations de température qui provoquent de la condensation. Vérifier : présence de gouttes d'eau dans les gaines, traces d'humidité aux raccords, isolation des gaines (calorifugeage). Si condensation → isoler les gaines avec de la laine minérale ou des manchons isolants" });
   await makeQuestion("VMC_DEP_HUM_EXTERNE", "Signes d'infiltration ou ponts thermiques dans le logement ?", "CHOIX_UNIQUE",
-    { ordre: 63, captureObligatoire: "PHOTO", aideTexte: "Observer les zones humides, murs, plafonds" });
+    { ordre: 63, captureObligatoire: "PHOTO", aideTexte: "Rechercher les signes d'infiltration extérieure : taches d'eau sur murs/plafonds, moisissures en angle de murs (= pont thermique), peinture qui cloque, odeur de moisi localisée. Si ces signes existent SANS lien avec la VMC → cause externe (défaut d'étanchéité, fissure, pont thermique). Hors périmètre VMC, signaler au client" });
 
   // ═══════════════════════════════════════════════════════════════════
   // SOUS-ARBRE 5 : DÉPANNAGE — Code erreur (double flux)
   // ═══════════════════════════════════════════════════════════════════
   await makeQuestion("VMC_DEP_CODE_SAISIE", "Saisir le code erreur affiché sur la centrale", "TEXTE_LIBRE",
-    { ordre: 70, captureObligatoire: "PHOTO", aideTexte: "Photo de l'afficheur + saisie du code (ex: E03, ERR1...)" });
+    { ordre: 70, captureObligatoire: "PHOTO", aideTexte: "Photographier l'afficheur de la centrale double flux avec le code visible. Saisir le code exactement comme affiché (ex: E03, ERR1, F2). Les codes courants : E01/E02 = défaut sonde température, E03 = surchauffe échangeur, E04 = défaut moteur, ERR = défaut général. Consulter la notice constructeur si disponible sur place" });
   await makeQuestion("VMC_DEP_CODE_ACTION", "Action corrective effectuée (réarmement, nettoyage, remplacement sonde...) ?", "CHOIX_UNIQUE",
-    { ordre: 71, captureObligatoire: "PHOTO", aideTexte: "Photo après action (moteur, sonde, échangeur...)" });
+    { ordre: 71, captureObligatoire: "PHOTO", aideTexte: "Documenter l'action corrective effectuée avec une photo. Actions courantes par code : surchauffe → nettoyer l'échangeur et vérifier le bypass, défaut sonde → vérifier le branchement ou remplacer, défaut moteur → vérifier condensateur et câblage. Après action, attendre 30 secondes avant de revérifier le code" });
   await makeQuestion("VMC_DEP_CODE_VERIF", "Le code erreur a-t-il disparu après l'action ?", "CHOIX_UNIQUE",
     { ordre: 72, captureObligatoire: "PHOTO", aideTexte: "Photo de l'afficheur après intervention" });
 
@@ -154,13 +154,13 @@ async function main() {
   // ENTRETIEN PRÉVENTIF (7 étapes)
   // ═══════════════════════════════════════════════════════════════════
   await makeQuestion("VMC_ENT_CAISSON", "État général du caisson (encrassement, fixation) ?", "CHOIX_UNIQUE",
-    { ordre: 80, captureObligatoire: "PHOTO", aideTexte: "Photo générale du caisson avant nettoyage" });
+    { ordre: 80, captureObligatoire: "PHOTO", aideTexte: "Photographier le caisson dans son ensemble : fixation (silent-blocs OK ?), état général (rouille, poussière excessive), branchements électriques, état des gaines raccordées. Aspirer la poussière extérieure du caisson et vérifier que les ouïes de ventilation ne sont pas obstruées" });
   await makeQuestion("VMC_ENT_BOUCHES", "Nettoyage des bouches d'extraction effectué ?", "CHOIX_UNIQUE",
-    { ordre: 81, captureObligatoire: "PHOTO", aideTexte: "Photo après nettoyage des bouches" });
+    { ordre: 81, captureObligatoire: "PHOTO", aideTexte: "Photographier les bouches APRÈS nettoyage pour preuve de travail effectué. Vérifier que les bouches sont correctement remontées et que le débit n'est pas obstrué. Pour les bouches hygroréglables : vérifier que la bandelette bouge librement (souffler dessus, elle doit réagir)" });
   await makeQuestion("VMC_ENT_FILTRES", "État des filtres (si double flux) ?", "CHOIX_UNIQUE",
-    { ordre: 82, captureObligatoire: "PHOTO", aideTexte: "G3/G4/F7 selon modèle. Choisir N/A si simple flux" });
+    { ordre: 82, captureObligatoire: "PHOTO", aideTexte: "Double flux : vérifier l'état des filtres extraction (G3/G4) et insufflation (F7). Un filtre colmaté réduit fortement le débit et fatigue le moteur. Fréquence de remplacement recommandée : tous les 6 mois (G4) à 1 an (F7). Simple flux : pas de filtre, choisir N/A" });
   await makeQuestion("VMC_ENT_GAINES", "Inspection visuelle des gaines accessibles ?", "CHOIX_UNIQUE",
-    { ordre: 83, captureObligatoire: "PHOTO", aideTexte: "Photo des gaines visibles (combles, placards)" });
+    { ordre: 83, captureObligatoire: "PHOTO", aideTexte: "Contrôle visuel des gaines accessibles. Points de vigilance : écrasement sous du matériel stocké, coudes trop serrés (perte de charge), déconnexions, gaines percées par des rongeurs, gaines non isolées en combles froids (risque condensation). Signaler tout défaut constaté" });
   await makeQuestion("VMC_ENT_DEBIT", "Mesure de débit de contrôle à la bouche SDB", "NUMERIQUE",
     { ordre: 84, captureObligatoire: "MESURE", uniteAttendue: "m³/h",
       aideTexte: "Anémomètre. Conforme si ≥ 30 m³/h en SDB" });
@@ -170,11 +170,11 @@ async function main() {
   // ═══════════════════════════════════════════════════════════════════
   // Étape 1 déjà créée : VMC_REM_MARQUE_ANCIENNE (marque ancienne)
   await makeQuestion("VMC_REM_PHOTO_ANCIEN", "Photo de l'ancien caisson avant dépose", "CHOIX_UNIQUE",
-    { ordre: 90, captureObligatoire: "PHOTO", aideTexte: "Photo du caisson en place avant démontage" });
+    { ordre: 90, captureObligatoire: "PHOTO", aideTexte: "Photo obligatoire AVANT dépose : caisson en place, branchements visibles, étiquette signalétique lisible (marque, modèle, puissance, date). Cette photo servira de référence en cas de litige ou de retour SAV" });
   await makeQuestion("VMC_REM_MARQUE_NEUVE", "Quelle est la marque de la nouvelle VMC installée ?", "CHOIX_UNIQUE",
     { ordre: 91 });
   await makeQuestion("VMC_REM_GAINES", "Les gaines existantes sont-elles conservées ou remplacées ?", "CHOIX_UNIQUE",
-    { ordre: 92, captureObligatoire: "PHOTO", aideTexte: "Photo des gaines après pose" });
+    { ordre: 92, captureObligatoire: "PHOTO", aideTexte: "Photographier les gaines après raccordement au nouveau caisson. Vérifier : bonne étanchéité aux raccords (colliers de serrage), gaines non pincées, parcours optimisé (minimum de coudes). Si gaines existantes conservées : vérifier leur état et signaler toute dégradation" });
   await makeQuestion("VMC_REM_NB_BOUCHES", "Nombre de bouches installées", "NUMERIQUE",
     { ordre: 93, uniteAttendue: "unités", aideTexte: "Compter toutes les bouches d'extraction posées" });
   await makeQuestion("VMC_REM_DEBIT_SDB", "Mesure de débit à la bouche SDB après mise en service", "NUMERIQUE",
@@ -193,21 +193,21 @@ async function main() {
   await makeQuestion("VMC_INS_MARQUE", "Quelle est la marque du kit VMC installé ?", "CHOIX_UNIQUE",
     { ordre: 110 });
   await makeQuestion("VMC_INS_NB_PIECES", "Nombre de pièces raccordées au réseau", "NUMERIQUE",
-    { ordre: 111, uniteAttendue: "pièces", aideTexte: "SDB + WC + cuisine + éventuelles pièces humides" });
+    { ordre: 111, uniteAttendue: "pièces", aideTexte: "Compter toutes les pièces raccordées au réseau VMC. Minimum réglementaire : SDB + WC + cuisine. Pièces supplémentaires possibles : buanderie, cellier, 2e SDB. Chaque pièce = une bouche d'extraction = une gaine. Le caisson doit être dimensionné pour le débit cumulé de toutes les bouches" });
   await makeQuestion("VMC_INS_GAINES_ML", "Linéaire total de gaines posées", "NUMERIQUE",
-    { ordre: 112, uniteAttendue: "m", aideTexte: "Estimer ou mesurer le linéaire total des gaines posées" });
+    { ordre: 112, uniteAttendue: "m", aideTexte: "Mesurer ou estimer le linéaire total des gaines posées. Important pour le dimensionnement : au-delà de 30m de gaine, les pertes de charge augmentent significativement et le moteur doit être plus puissant. Diamètre standard : 80mm pour WC, 125mm pour SDB et cuisine. Privilégier les parcours courts et droits" });
   await makeQuestion("VMC_INS_PHOTO_CAISSON", "Photo du caisson installé", "CHOIX_UNIQUE",
-    { ordre: 113, captureObligatoire: "PHOTO", aideTexte: "Photo du caisson en place avec branchements visibles" });
+    { ordre: 113, captureObligatoire: "PHOTO", aideTexte: "Photographier le caisson installé : fixation (suspension par silent-blocs obligatoire pour éviter les vibrations), raccordements gaines, branchement électrique. Le caisson ne doit PAS être posé directement sur une surface dure (transmission des vibrations)" });
   await makeQuestion("VMC_INS_PHOTO_GAINES", "Photo du parcours des gaines", "CHOIX_UNIQUE",
-    { ordre: 114, captureObligatoire: "PHOTO", aideTexte: "Photo du cheminement des gaines dans les combles ou placards" });
+    { ordre: 114, captureObligatoire: "PHOTO", aideTexte: "Photographier le parcours complet des gaines : du caisson jusqu'aux bouches. Points de contrôle : pente régulière (éviter les points bas = accumulation de condensation), isolation en zone froide (combles), fixation correcte (pas de gaine qui pend), coudes progressifs (pas de 90° brutal)" });
   await makeQuestion("VMC_INS_ELEC", "Le raccordement électrique est-il conforme ?", "CHOIX_UNIQUE",
-    { ordre: 115, captureObligatoire: "PHOTO", aideTexte: "Photo du tableau et du raccordement dédié VMC" });
+    { ordre: 115, captureObligatoire: "PHOTO", aideTexte: "Le raccordement électrique VMC doit être conforme NF C 15-100 : disjoncteur dédié 2A (simple flux) ou 6A (double flux), alimentation en 230V directe (pas de prise), câble en 1.5mm². Photographier le tableau avec le disjoncteur identifié et le câblage au caisson" });
   await makeQuestion("VMC_INS_DEBIT_SDB", "Mesure de débit à la bouche SDB", "NUMERIQUE",
     { ordre: 116, captureObligatoire: "MESURE", uniteAttendue: "m³/h",
       aideTexte: "Anémomètre. Conforme si ≥ 30 m³/h en SDB" });
   await makeQuestion("VMC_INS_DEBIT_CUISINE", "Mesure de débit à la bouche cuisine", "NUMERIQUE",
     { ordre: 117, captureObligatoire: "MESURE", uniteAttendue: "m³/h",
-      aideTexte: "Conforme si ≥ 45 m³/h en cuisine ouverte, ≥ 30 m³/h en cuisine fermée" });
+      aideTexte: "Mesurer le débit à la bouche cuisine avec l'anémomètre. Normes : cuisine ouverte ≥ 45 m³/h (grand débit), cuisine fermée ≥ 30 m³/h. Si la VMC a un mode grand débit (bouton boost), tester dans les deux modes et noter les valeurs" });
 
   // ═══════════════════════════════════════════════════════════════════
   // TRANSITIONS
